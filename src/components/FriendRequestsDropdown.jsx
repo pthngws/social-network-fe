@@ -1,9 +1,30 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { UserGroupIcon } from '@heroicons/react/24/solid';
 import { friendshipService } from '../services/friendshipService';
+import Alert from './ui/Alert';      
 
-const FriendRequestsDropdown = ({ friendRequests, showFriendMenu, setShowFriendMenu }) => {
+const FriendRequestsDropdown = ({ friendRequests, setFriendRequests, showFriendMenu, setShowFriendMenu }) => {
   const dropdownRef = useRef();
+  const [alerts, setAlerts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch friend requests when dropdown opens
+  useEffect(() => {
+    if (showFriendMenu) {
+      setIsLoading(true);
+      friendshipService.getFriendshipRequests()
+        .then((requests) => {
+          console.log('Fetched friend requests on open:', requests); // Debug
+          setFriendRequests(Array.isArray(requests) ? requests : []);
+        })
+        .catch((error) => {
+          console.error('Error fetching friend requests on open:', error);
+          setFriendRequests([]);
+          addAlert('Lỗi khi tải lời mời kết bạn', 'error');
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [showFriendMenu, setFriendRequests]);
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -12,18 +33,11 @@ const FriendRequestsDropdown = ({ friendRequests, showFriendMenu, setShowFriendM
         setShowFriendMenu(false);
       }
     };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [setShowFriendMenu]);
 
-    if (showFriendMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showFriendMenu, setShowFriendMenu]);
-
+  // Calculate time ago
   const timeAgo = (dateString) => {
     const now = new Date();
     const date = new Date(dateString);
@@ -34,18 +48,49 @@ const FriendRequestsDropdown = ({ friendRequests, showFriendMenu, setShowFriendM
     return `${Math.floor(diff / 86400)} ngày trước`;
   };
 
-  const handleAcceptFriend = (userId) => {
-    friendshipService
-      .acceptFriendship({ receiverId: userId })
-      .then(() => window.location.reload())
-      .catch((error) => alert('Lỗi khi chấp nhận lời mời: ' + error));
+  // Accept friend request
+  const handleAcceptFriend = async (userId) => {
+    try {
+      await friendshipService.acceptFriendship({ receiverId: userId });
+      setFriendRequests((prev) => prev.filter((req) => req.user.id !== userId));
+      addAlert('Đã chấp nhận lời mời kết bạn', 'success');
+    } catch (error) {
+      console.error('Error accepting friend:', error);
+      if (error.response?.status === 404) {
+        setFriendRequests((prev) => prev.filter((req) => req.user.id !== userId));
+        addAlert('Lời mời kết bạn đã bị hủy bởi người gửi', 'error');
+      } else {
+        addAlert('Lỗi khi chấp nhận lời mời', 'error');
+      }
+    }
   };
 
-  const handleRejectFriend = (userId) => {
-    friendshipService
-      .cancelFriendship({ receiverId: userId })
-      .then(() => window.location.reload())
-      .catch((error) => alert('Lỗi khi từ chối lời mời: ' + error));
+  // Reject friend request
+  const handleRejectFriend = async (userId) => {
+    try {
+      await friendshipService.cancelFriendship({ receiverId: userId });
+      setFriendRequests((prev) => prev.filter((req) => req.user.id !== userId));
+      addAlert('Đã từ chối lời mời kết bạn', 'success');
+    } catch (error) {
+      console.error('Error rejecting friend:', error);
+      if (error.response?.status === 404) {
+        setFriendRequests((prev) => prev.filter((req) => req.user.id !== userId));
+        addAlert('Lời mời kết bạn đã bị hủy bởi người gửi', 'error');
+      } else {
+        addAlert('Lỗi khi từ chối lời mời', 'error');
+      }
+    }
+  };
+
+  // Add new alert
+  const addAlert = (message, type) => {
+    const id = Date.now();
+    setAlerts((prev) => [...prev, { id, message, type }]);
+  };
+
+  // Remove alert
+  const removeAlert = (id) => {
+    setAlerts((prev) => prev.filter((alert) => alert.id !== id));
   };
 
   return (
@@ -54,16 +99,11 @@ const FriendRequestsDropdown = ({ friendRequests, showFriendMenu, setShowFriendM
         className="relative flex items-center justify-center w-10 h-10 rounded-full group"
         onClick={() => setShowFriendMenu(!showFriendMenu)}
       >
-        {/* Hover circle */}
         <span className="absolute w-16 h-16 rounded-full bg-gray-500 dark:bg-gray-400 opacity-0 group-hover:opacity-20 transition-all duration-300"></span>
-
-        {/* Icon */}
         <UserGroupIcon
           className="relative h-6 w-6 text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-200"
           title="Lời mời kết bạn"
         />
-
-        {/* Badge */}
         {friendRequests.length > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
             {friendRequests.length}
@@ -77,7 +117,9 @@ const FriendRequestsDropdown = ({ friendRequests, showFriendMenu, setShowFriendM
             Lời mời kết bạn
           </h6>
           <div className="max-h-64 overflow-y-auto custom-scroll">
-            {friendRequests.length > 0 ? (
+            {isLoading ? (
+              <p className="text-center text-gray-500 dark:text-gray-400 py-4">Đang tải...</p>
+            ) : friendRequests.length > 0 ? (
               friendRequests.map((request) => (
                 <div
                   key={request.user.id}
@@ -86,7 +128,7 @@ const FriendRequestsDropdown = ({ friendRequests, showFriendMenu, setShowFriendM
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <img
-                        src={request.user.avatar}
+                        src={request.user.avatar || 'https://via.placeholder.com/32'}
                         alt={`${request.user.firstName} ${request.user.lastName}`}
                         className="w-10 h-10 rounded-full mr-2"
                       />
@@ -127,6 +169,16 @@ const FriendRequestsDropdown = ({ friendRequests, showFriendMenu, setShowFriendM
           </div>
         </div>
       )}
+
+      {alerts.map((alert) => (
+        <Alert
+          key={alert.id}
+          message={alert.message}
+          type={alert.type}
+          duration={4000}
+          onClose={() => removeAlert(alert.id)}
+        />
+      ))}
     </div>
   );
 };

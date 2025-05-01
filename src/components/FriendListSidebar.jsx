@@ -7,18 +7,17 @@ const FriendListSidebar = ({ onFriendSelect }) => {
 
   useEffect(() => {
     if (userId) {
-      friendshipService.getAllFriendships()
-        .then(response => {
-          if (response.data.status === 200 && Array.isArray(response.data.data)) {
-            setFriends(response.data.data);
-          } else {
-            setFriends([]);
-          }
-        })
-        .catch(error => {
+      const fetchFriends = async () => {
+        try {
+          const friends = await friendshipService.getAllFriendships();
+          console.log('Friends list:', friends); // Debug
+          setFriends(Array.isArray(friends) ? friends : []);
+        } catch (error) {
           console.error('Lỗi lấy danh sách bạn bè:', error);
           setFriends([]);
-        });
+        }
+      };
+      fetchFriends();
     }
   }, [userId]);
 
@@ -35,17 +34,19 @@ const FriendListSidebar = ({ onFriendSelect }) => {
           <p className="text-center text-gray-500 dark:text-gray-400 text-sm pt-4">Chưa có bạn bè</p>
         ) : (
           <ul className="space-y-1">
-            {friends.map(friend => (
+            {friends.map((friend) => (
               <li
                 key={friend.id}
                 className="flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-150"
-                onClick={() => onFriendSelect({
-                  userID: friend.user.id,
-                  name: `${friend.user.firstName} ${friend.user.lastName}`
-                })}
+                onClick={() =>
+                  onFriendSelect({
+                    userID: friend.user.id,
+                    name: `${friend.user.firstName} ${friend.user.lastName}`,
+                  })
+                }
               >
                 <img
-                  src={friend.user.avatar}
+                  src={friend.user.avatar || 'https://via.placeholder.com/32'}
                   alt={`${friend.user.firstName} ${friend.user.lastName}`}
                   className="w-8 h-8 rounded-full object-cover mr-2"
                   onError={(e) => {
