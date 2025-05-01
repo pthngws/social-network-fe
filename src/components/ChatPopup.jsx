@@ -4,7 +4,6 @@ import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import { FaComments } from 'react-icons/fa';
 import { BsSun, BsMoon } from 'react-icons/bs';
-
 const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [friends, setFriends] = useState([]);
@@ -12,7 +11,6 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState('');
   const [stompClient, setStompClient] = useState(null);
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const chatBoxRef = useRef(null);
   const chatPopupRef = useRef(null);
   const senderId = String(localStorage.getItem('userId'));
@@ -24,14 +22,7 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
     }
   }, [propSelectedFriend]);
 
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.body.classList.add('dark');
-    } else {
-      document.body.classList.remove('dark');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+
 
   useEffect(() => {
     if (isOpen) {
@@ -140,14 +131,6 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
         <FaComments className="w-6 h-6" />
       </button>
 
-      {/* Nút đổi theme */}
-      <button
-        onClick={toggleTheme}
-        className="fixed bottom-4 left-4 bg-white dark:bg-gray-800 text-yellow-500 dark:text-white p-3 rounded-full shadow-lg z-40"
-        title="Chuyển giao diện"
-      >
-        {theme === 'light' ? <BsMoon className="w-5 h-5" /> : <BsSun className="w-5 h-5" />}
-      </button>
 
       {/* Giao diện Chat */}
       {isOpen && (

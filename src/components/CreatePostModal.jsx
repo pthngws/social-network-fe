@@ -4,6 +4,7 @@ import Button from './ui/Button';
 import Alert from './ui/Alert';
 import { PhotoIcon, SparklesIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { postService } from '../services/postService';
+import { useApiLoading } from '../hooks/useApiLoading';
 
 const CreatePostModal = ({ isOpen, onClose, onPostCreated, post = null, isEditMode = false }) => {
   const [postText, setPostText] = useState('');
@@ -11,6 +12,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, post = null, isEditMo
   const [existingMedia, setExistingMedia] = useState([]);
   const [mediaToDelete, setMediaToDelete] = useState([]);
   const [error, setError] = useState(null);
+  const { startLoading, stopLoading } = useApiLoading();
 
   useEffect(() => {
     if (isEditMode && post) {
@@ -28,6 +30,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, post = null, isEditMo
 
   const handleSubmit = async () => {
     try {
+      startLoading();
       if (isEditMode) {
         await postService.updatePost(post.id, postText, mediaFiles, mediaToDelete);
       } else {
@@ -42,6 +45,8 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, post = null, isEditMo
       onClose();
     } catch (err) {
       setError(err.response?.data?.message || (isEditMode ? 'Lỗi khi cập nhật bài viết' : 'Lỗi khi tạo bài viết'));
+    } finally {
+      stopLoading();
     }
   };
 
@@ -105,42 +110,40 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, post = null, isEditMo
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Textarea */}
-          <Input
-            as="textarea"
-            rows="4"
-            placeholder={isEditMode ? 'Chỉnh sửa nội dung bài viết...' : 'Bạn đang nghĩ gì thế nhỉ?'}
-            value={postText}
-            onChange={(e) => setPostText(e.target.value)}
-            className="w-full p-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none transition-all duration-200"
-          />
+          <textarea
+  as="textarea"
+  rows="6"
+  placeholder={isEditMode ? 'Chỉnh sửa nội dung bài viết...' : 'Bạn đang nghĩ gì thế nhỉ?'}
+  value={postText}
+  onChange={(e) => setPostText(e.target.value)}
+  className="w-full pt-0.5 pr-3 pb-3 pl-3 border-2 border-gray-200 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500  resize-none min-h-40 transition-all duration-200"
+/>
 
-          {/* File Upload */}
+
+          {/* Media Section */}
           <div>
-            <label className="flex items-center justify-center border-2 border-dashed border-blue-300 dark:border-blue-600 p-4 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/50 transition-all duration-200">
-              <PhotoIcon className="w-6 h-6 text-blue-500 dark:text-blue-400 mr-2" />
-              <span className="text-blue-500 dark:text-blue-400 font-medium">
-                {isEditMode ? 'Thêm ảnh/video mới' : 'Thêm ảnh/video dễ thương'}
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ảnh/Video:</h3>
+            <div className="flex flex-wrap items-center">
+              {/* File Upload */}
+              <label className="inline-flex items-center justify-center border-2 border-dashed border-blue-300 dark:border-blue-600 p-2 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/50 transition-all duration-200 w-24 h-24 mr-2 mb-2">
+                <PhotoIcon className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                <span className="text-blue-500 dark:text-blue-400 font-medium">
+                +
               </span>
-              <input
-                type="file"
-                className="hidden"
-                multiple
-                accept="image/*,video/*"
-                onChange={handleFileChange}
-              />
-            </label>
-          </div>
+                <input
+                  type="file"
+                  className="hidden"
+                  multiple
+                  accept="image/*,video/*"
+                  onChange={handleFileChange}
+                />
+              </label>
 
-          {/* Media Preview */}
-          {(existingMedia.length > 0 || mediaFiles.length > 0) && (
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ảnh/Video đã chọn:</h3>
-              <div className="flex flex-wrap">
-                {existingMedia.map((media, index) => renderMediaPreview(media, index, true))}
-                {mediaFiles.map((file, index) => renderMediaPreview(file, index))}
-              </div>
+              {/* Media Preview */}
+              {existingMedia.map((media, index) => renderMediaPreview(media, index, true))}
+              {mediaFiles.map((file, index) => renderMediaPreview(file, index))}
             </div>
-          )}
+          </div>
 
           {/* Error Alert */}
           {error && (

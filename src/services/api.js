@@ -1,4 +1,5 @@
 import axios from "axios";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/";
 
 const api = axios.create({
@@ -68,7 +69,7 @@ api.interceptors.response.use(
       } catch (err) {
         processQueue(err, null);
         localStorage.removeItem("token");
-        window.location.href = "/login"; // hoặc điều hướng tuỳ ứng dụng của bạn
+        window.location.href = "/login";
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

@@ -51,9 +51,19 @@ const Header = () => {
     <LogoAndSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
     <div className="flex items-center space-x-8">
-      <a href="/home" className="hover:text-primary dark:hover:text-gray-300">
-        <FaHome className="h-6 w-6 text-gray-700 dark:text-gray-200" />
-      </a>
+    <a
+      href="/home"
+      className="relative flex items-center justify-center w-10 h-10 rounded-full group"
+    >
+      {/* Hover circle */}
+      <span className="absolute w-16 h-16 rounded-full bg-gray-500 dark:bg-gray-400 opacity-0 group-hover:opacity-20 transition-all duration-300"></span>
+
+      {/* Icon */}
+      <FaHome
+        className="relative h-6 w-6 text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-200"
+        title="Trang chủ"
+      />
+    </a>
       <FriendRequestsDropdown
         friendRequests={friendRequests}
         showFriendMenu={showFriendMenu}

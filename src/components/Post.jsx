@@ -6,6 +6,8 @@ import Input from './ui/Input';
 import Button from './ui/Button';
 import Alert from './ui/Alert';
 import CreatePostModal from './CreatePostModal';
+import MediaPreviewModal from './MediaPreviewModal';
+import { useApiLoading } from '../hooks/useApiLoading';
 import {
   HeartIcon,
   ChatBubbleLeftIcon,
@@ -27,7 +29,9 @@ const Post = ({ post }) => {
   const [alert, setAlert] = useState({ show: false, type: '', message: '' }); // New alert state
   const [showReplies, setShowReplies] = useState({});
   const [showComments, setShowComments] = useState(false);
+  const { startLoading, stopLoading } = useApiLoading();
   const currentUserId = Number(localStorage.getItem('userId'));
+  const [previewMedia, setPreviewMedia] = useState({ isOpen: false, url: '', type: '' });
 
   const timeAgo = (timestamp) => {
     const now = new Date();
@@ -103,11 +107,14 @@ const Post = ({ post }) => {
   const handleDeletePost = async () => {
     setAlert({ show: true, type: 'warning', message: 'Bạn có chắc chắn muốn xóa bài viết này?' });
     try {
+      startLoading();
       await postService.deletePost(post.id);
       setAlert({ show: true, type: 'success', message: 'Xóa bài viết thành công!' });
       setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
       setAlert({ show: true, type: 'error', message: 'Lỗi xóa bài viết' });
+    } finally {
+      stopLoading();
     }
   };
 
@@ -119,12 +126,15 @@ const Post = ({ post }) => {
     const reason = document.querySelector('input[name="reportReason"]:checked')?.value;
     if (reason) {
       try {
+        startLoading();
         await postService.reportPost({ title: reason, postId: post.id });
         setAlert({ show: true, type: 'success', message: 'Báo cáo thành công!' });
         setShowReportModal(false);
         setTimeout(() => setAlert({ show: false, type: '', message: '' }), 3000);
       } catch (err) {
         setAlert({ show: true, type: 'error', message: 'Lỗi báo cáo' });
+      } finally {
+        stopLoading();
       }
     } else {
       setAlert({ show: true, type: 'error', message: 'Vui lòng chọn lý do báo cáo' });
@@ -143,6 +153,14 @@ const Post = ({ post }) => {
       fetchComments();
     }
     setShowComments(!showComments);
+  };
+
+  const handleMediaClick = (mediaUrl, mediaType) => {
+    setPreviewMedia({
+      isOpen: true,
+      url: mediaUrl,
+      type: mediaType
+    });
   };
 
   const renderComments = (comments, parentId = null) => {
@@ -319,22 +337,27 @@ const Post = ({ post }) => {
             {post.media.map((mediaItem) => {
               const mediaUrl = mediaItem.media.url;
               const mediaType = mediaUrl.split('.').pop().toLowerCase();
-              return mediaType === 'jpg' || mediaType === 'jpeg' || mediaType === 'png' ? (
-                <div key={mediaUrl} className=" overflow-hidden rounded-lg aspect-w-16 aspect-h-9">
-                  <img
-                    src={mediaUrl}
-                    alt="Media"
-                    className="w-full h-full object-contain rounded-lg transition-transform duration-300 hover:scale-105"
-                    loading="lazy"
-                  />
-                </div>
-              ) : (
-                <div key={mediaUrl} className="relative overflow-hidden rounded-lg aspect-w-16 aspect-h-9">
-                  <video
-                    src={mediaUrl}
-                    controls
-                    className="w-full h-full object-contain rounded-lg"
-                  />
+              const isImage = mediaType === 'jpg' || mediaType === 'jpeg' || mediaType === 'png';
+              
+              return (
+                <div 
+                  key={mediaUrl} 
+                  className="overflow-hidden rounded-lg aspect-w-16 aspect-h-9 cursor-pointer"
+                  onClick={() => handleMediaClick(mediaUrl, isImage ? 'image' : 'video')}
+                >
+                  {isImage ? (
+                    <img
+                      src={mediaUrl}
+                      alt="Media"
+                      className="w-full h-full object-cover rounded-lg transition-transform duration-300 hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <video
+                      src={mediaUrl}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  )}
                 </div>
               );
             })}
@@ -436,6 +459,14 @@ const Post = ({ post }) => {
           </div>
 
       </Modal>
+
+      {/* Media Preview Modal */}
+      <MediaPreviewModal
+        isOpen={previewMedia.isOpen}
+        onClose={() => setPreviewMedia({ isOpen: false, url: '', type: '' })}
+        mediaUrl={previewMedia.url}
+        mediaType={previewMedia.type}
+      />
     </Card>
   );
 };

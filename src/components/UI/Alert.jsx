@@ -26,7 +26,7 @@ const Alert = ({ message, type = "success", duration = 4000, onClose }) => {
 
   // Base styles for the alert
   const baseStyle =
-    "fixed top-20 right-6 w-80 sm:w-96 p-4 rounded-lg shadow-md transition-all duration-300 ease-in-out transform"; // Changed top-12 to top-16
+    "fixed top-20 right-6 w-80 sm:w-96 p-4 rounded-lg shadow-md transition-all duration-300 ease-in-out transform z-[9999]"; // Added z-[9999]
 
   // Type-specific styles with vibrant colors and cleaner shadow
   const typeStyles = {

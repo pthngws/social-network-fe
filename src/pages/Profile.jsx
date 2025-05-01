@@ -7,11 +7,13 @@ import Post from '../components/Post';
 import { userService } from '../services/userService';
 import { PencilIcon } from '@heroicons/react/24/solid';
 import Alert from '../components/ui/Alert';
-
+import { useApiLoading } from '../hooks/useApiLoading';
+import Input from '../components/ui/Input';
 const Profile = () => {
   const { user, loading: profileLoading, error: profileError, refetch } = useProfile();
   const { posts, fetchPosts } = usePosts('my');
   const { friends, fetchFriends, removeFriend, loading: friendsLoading, error: friendsError } = useFriendship();
+  const { startLoading, stopLoading } = useApiLoading();
 
   const [activeTab, setActiveTab] = useState('timeline');
   const [showModal, setShowModal] = useState(false);
@@ -52,6 +54,7 @@ const Profile = () => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
+      startLoading();
       const updateData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -65,18 +68,23 @@ const Profile = () => {
       setTimeout(() => setAlert({ show: false, type: '', message: '' }), 3000);
     } catch (err) {
       setAlert({ show: true, type: 'error', message: `Lỗi cập nhật: ${err.message || 'Không xác định'}` });
+    } finally {
+      stopLoading();
     }
   };
 
   const handleRemoveFriend = async (friendId) => {
     setAlert({ show: true, type: 'warning', message: 'Bạn có chắc chắn muốn xóa bạn bè này?' });
     try {
+      startLoading();
       await removeFriend(friendId);
       setAlert({ show: true, type: 'success', message: 'Xóa bạn bè thành công!' });
       fetchFriends();
       setTimeout(() => setAlert({ show: false, type: '', message: '' }), 3000);
     } catch (err) {
       setAlert({ show: true, type: 'error', message: 'Lỗi xóa bạn bè' });
+    } finally {
+      stopLoading();
     }
   };
 
@@ -140,20 +148,19 @@ const Profile = () => {
               onPostCreated={fetchPosts}
             />
             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow mb-4">
-              <div className="flex items-center">
-                <img
-                  src={user?.avatar || '/default-avatar.png'}
-                  alt="Avatar"
-                  className="w-12 h-12 rounded-full mr-3"
-                />
-                <input
-                  type="text"
-                  placeholder="Bạn đang nghĩ gì?"
-                  className="flex-1 p-3 border rounded-xl bg-gray-100 dark:bg-gray-700 dark:text-white cursor-pointer"
-                  onClick={() => setShowModal(true)}
-                  readOnly
-                />
-              </div>
+            <div className="flex items-center gap-4">
+            <img
+              src={user?.avatar || '/default-avatar.png'}
+              alt="Avatar"
+              className="w-12 h-12 rounded-full object-cover"
+            />
+            <Input
+              placeholder="Bạn đang nghĩ gì?"
+              className="flex-1"
+              onClick={() => setShowModal(true)}
+              readOnly
+            />
+          </div>
             </div>
             <div className="space-y-4">
               {posts.length > 0 ? (

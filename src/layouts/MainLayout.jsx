@@ -19,13 +19,13 @@ const MainLayout = () => {
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
     setUser(null);
-    navigate("/login");
+    navigate("/");
   };
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 flex flex-col transition-all duration-300">
       <Header user={user} onLogout={handleLogout} />
-      <main className="mt-10 flex-grow">
+      <main className="mt-5 flex-grow">
         <Outlet /> {/* Nơi render các page con như Profile, ViewResume */}
       </main>
     </div>
