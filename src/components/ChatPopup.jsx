@@ -4,6 +4,7 @@ import { messageService } from '../services/messageService';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import { FaComments } from 'react-icons/fa';
+import EmojiPicker from 'emoji-picker-react';
 
 const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,8 +12,10 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState('');
   const [stompClient, setStompClient] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const chatBoxRef = useRef(null);
   const chatPopupRef = useRef(null);
+  const emojiButtonRef = useRef(null);
   const senderId = String(localStorage.getItem('userId'));
   const navigate = useNavigate();
 
@@ -29,7 +32,6 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
   useEffect(() => {
     if (selectedFriend && isOpen) {
       console.log('Opening ChatPopup for friend:', selectedFriend);
-      // Gọi markMessagesAsRead và refreshFriendList
       messageService
         .markMessagesAsRead(selectedFriend.userID)
         .then(() => {
@@ -61,10 +63,12 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
       if (
         chatPopupRef.current &&
         !chatPopupRef.current.contains(event.target) &&
-        !event.target.closest('.chat-bubble-button')
+        !event.target.closest('.chat-bubble-button') &&
+        (!emojiButtonRef.current || !emojiButtonRef.current.contains(event.target))
       ) {
         setIsOpen(false);
         setSelectedFriend(null);
+        setShowEmojiPicker(false);
       }
     };
 
@@ -136,6 +140,7 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
       console.log('Sending message:', message);
       stompClient.send('/app/sendMessage', {}, JSON.stringify(message));
       setMessageInput('');
+      setShowEmojiPicker(false);
     }
   };
 
@@ -144,6 +149,11 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const onEmojiClick = (emojiObject) => {
+    setMessageInput((prev) => prev + emojiObject.emoji);
+    setShowEmojiPicker(false);
   };
 
   const formatTime = (timestamp) => {
@@ -199,6 +209,7 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
               onClick={() => {
                 setIsOpen(false);
                 setSelectedFriend(null);
+                setShowEmojiPicker(false);
               }}
               className="hover:bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center"
             >
@@ -259,8 +270,20 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
               );
             })}
           </div>
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700 relative">
+            {showEmojiPicker && (
+              <div className="absolute bottom-16 left-4 z-50">
+                <EmojiPicker onEmojiClick={onEmojiClick} />
+              </div>
+            )}
             <div className="flex items-center">
+              <button
+                ref={emojiButtonRef}
+                className="p-3 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                onClick={() => setShowEmojiPicker((prev) => !prev)}
+              >
+                😊
+              </button>
               <input
                 type="text"
                 placeholder="Soạn tin nhắn"

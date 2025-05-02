@@ -34,11 +34,12 @@ export const postService = {
     }
     return api.put(`/post/${id}`, formData);
   },
+
   // Delete a post
   deletePost: (id) => api.delete(`/post/${id}`),
 
-  // Like a post
-  likePost: (id) => api.post(`/like/${id}`),
+  // React to a post
+  reactPost: (id, reactionType) => api.post(`/react/${id}?reactionType=${reactionType}`),
 
   // Comment on a post
   commentPost: (postId, commentDto) => api.post(`/comment/${postId}`, commentDto),
