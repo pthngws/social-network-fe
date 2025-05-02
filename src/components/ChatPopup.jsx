@@ -115,6 +115,18 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
     return date.toLocaleDateString();
   };
 
+  const formatMinutesAgo = (minutesAgo) => {
+    if (minutesAgo < 60) {
+      return `${minutesAgo} phút trước`;
+    }
+    const hours = Math.floor(minutesAgo / 60);
+    if (hours < 24) {
+      return `${hours} giờ trước`;
+    }
+    const days = Math.floor(hours / 24);
+    return `${days} ngày trước`;
+  };
+  
   const getStatusText = (isOnline, minutesAgo) => {
     if (isOnline) {
       return 'Đang hoạt động';
@@ -122,7 +134,7 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
     if (minutesAgo === null) {
       return '';
     }
-    return `Hoạt động ${minutesAgo} phút trước`;
+    return `Hoạt động ${formatMinutesAgo(minutesAgo)}`;
   };
 
   return (
