@@ -15,6 +15,7 @@ import MainLayout from "./layouts/MainLayout";
 import ChatPopup from "./components/ChatPopup";
 import FriendListSidebar from "./components/FriendListSidebar";
 import Loading from "./components/Loading";
+import { startOnlineStatusPing } from "./services/onlineStatusManager";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -22,6 +23,15 @@ function App() {
     return savedMode ? JSON.parse(savedMode) : false;
   });
   const [selectedFriend, setSelectedFriend] = useState(null);
+  const userId = localStorage.getItem("userId");
+  // Logic ping để cập nhật trạng thái online
+  useEffect(() => {
+    if (userId) {
+      console.log("Starting online status ping for userId:", userId); // Debug
+      const stopPing = startOnlineStatusPing(userId);
+      return stopPing; // Cleanup khi userId thay đổi hoặc component unmount
+    }
+  }, [userId]);
 
   useEffect(() => {
     if (isDarkMode) {
