@@ -7,9 +7,10 @@ import LogoAndSearch from './LogoAndSearch';
 import FriendRequestsDropdown from './FriendRequestsDropdown';
 import NotificationsDropdown from './NotificationsDropdown';
 import UserMenuDropdown from './UserMenuDropdown';
+import ChatListDropdown from './ChatListDropdown';
 import { FaHome } from 'react-icons/fa';
 
-const Header = () => {
+const Header = ({ selectedFriend, setSelectedFriend }) => {
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [friendRequests, setFriendRequests] = useState([]);
@@ -17,10 +18,10 @@ const Header = () => {
   const [showFriendMenu, setShowFriendMenu] = useState(false);
   const [showNotifyMenu, setShowNotifyMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showChatMenu, setShowChatMenu] = useState(false);
   const [userEmail, setUserEmail] = useState(null);
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
 
-  // Fetch initial data
   useEffect(() => {
     const email = localStorage.getItem('email');
     const token = localStorage.getItem('token');
@@ -30,19 +31,17 @@ const Header = () => {
     }
     setUserEmail(email);
 
-    // Fetch user profile
     userService.getProfile()
       .then((response) => {
-        console.log('User profile:', response.data); // Debug
+        console.log('User profile:', response.data);
         setUser(response.data.data || null);
       })
       .catch((error) => console.error('Lỗi lấy thông tin người dùng:', error));
 
-    // Fetch friend requests
     const fetchFriendRequests = async () => {
       try {
         const requests = await friendshipService.getFriendshipRequests();
-        console.log('Initial friend requests:', requests); // Debug
+        console.log('Initial friend requests:', requests);
         setFriendRequests(Array.isArray(requests) ? requests : []);
       } catch (error) {
         console.error('Lỗi lấy lời mời kết bạn:', error);
@@ -51,11 +50,10 @@ const Header = () => {
     };
     fetchFriendRequests();
 
-    // Fetch notifications
     const fetchNotifications = async () => {
       try {
         const notifications = await notifyService.getNotifications();
-        console.log('Initial notifications:', notifications); // Debug
+        console.log('Initial notifications:', notifications);
         setNotifications(Array.isArray(notifications) ? notifications : []);
       } catch (error) {
         console.error('Lỗi lấy thông báo:', error);
@@ -65,36 +63,33 @@ const Header = () => {
     fetchNotifications();
   }, []);
 
-  // Connect WebSocket for real-time friend requests and notifications
   useEffect(() => {
     if (userEmail) {
-      console.log('Connecting WebSocket for:', userEmail); // Debug
+      console.log('Connecting WebSocket for:', userEmail);
       connectWebSocket(userEmail, (notification) => {
-        console.log('Received WebSocket notification:', notification); // Debug
+        console.log('Received WebSocket notification:', notification);
 
-        // Handle friend request notifications
         if (notification.content.includes('đã gửi lời mời kết bạn')) {
-          console.log('Friend request notification detected, fetching requests...'); // Debug
+          console.log('Friend request notification detected, fetching requests...');
           friendshipService.getFriendshipRequests()
             .then((requests) => {
-              console.log('Updated friend requests:', requests); // Debug
+              console.log('Updated friend requests:', requests);
               setFriendRequests(Array.isArray(requests) ? requests : []);
             })
             .catch((error) => console.error('Lỗi cập nhật lời mời kết bạn:', error));
         } else if (notification.content.includes('đã hủy lời mời kết bạn')) {
-          console.log('Friend request cancellation detected, fetching requests...'); // Debug
+          console.log('Friend request cancellation detected, fetching requests...');
           friendshipService.getFriendshipRequests()
             .then((requests) => {
-              console.log('Updated friend requests after cancellation:', requests); // Debug
+              console.log('Updated friend requests after cancellation:', requests);
               setFriendRequests(Array.isArray(requests) ? requests : []);
             })
             .catch((error) => console.error('Lỗi cập nhật lời mời kết bạn:', error));
         } else {
-          // Handle other notifications
-          console.log('General notification detected, fetching notifications...'); // Debug
+          console.log('General notification detected, fetching notifications...');
           notifyService.getNotifications()
             .then((notifications) => {
-              console.log('Updated notifications:', notifications); // Debug
+              console.log('Updated notifications:', notifications);
               setNotifications(Array.isArray(notifications) ? notifications : []);
             })
             .catch((error) => console.error('Lỗi cập nhật thông báo:', error));
@@ -105,7 +100,7 @@ const Header = () => {
 
     return () => {
       if (isWebSocketConnected) {
-        console.log('Disconnecting WebSocket'); // Debug
+        console.log('Disconnecting WebSocket');
         disconnectWebSocket();
         setIsWebSocketConnected(false);
       }
@@ -127,6 +122,11 @@ const Header = () => {
               title="Trang chủ"
             />
           </a>
+          <ChatListDropdown
+            showChatMenu={showChatMenu}
+            setShowChatMenu={setShowChatMenu}
+            onFriendSelect={setSelectedFriend}
+          />
           <FriendRequestsDropdown
             friendRequests={friendRequests}
             setFriendRequests={setFriendRequests}
@@ -135,7 +135,7 @@ const Header = () => {
           />
           <NotificationsDropdown
             notifications={notifications}
-            setNotifications={setNotifications} // Thêm props này
+            setNotifications={setNotifications}
             showNotifyMenu={showNotifyMenu}
             setShowNotifyMenu={setShowNotifyMenu}
           />

@@ -140,34 +140,38 @@ const NotificationsDropdown = ({ showNotifyMenu, setShowNotifyMenu }) => {
             )}
           </div>
           <div className="max-h-64 overflow-y-auto custom-scroll">
-            {notifyList.length > 0 ? (
-              notifyList.slice().reverse().map((notification, index) => (
-                <div
-                  key={notification.id || `temp-key-${index}`}
-                  className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 cursor-pointer ${
-                    notification.isRead === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''
-                  }`}
-                >
-                  <p
-                    className={`font-bold ${
-                      notification.isRead === 0
-                        ? 'text-black dark:text-white'
-                        : 'text-gray-600 dark:text-gray-300'
-                    }`}
-                  >
-                    {notification.content}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {timeAgo(notification.date)}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-gray-500 dark:text-gray-400 py-4">
-                Không có thông báo nào.
-              </p>
-            )}
-          </div>
+  {notifyList.length > 0 ? (
+    notifyList
+      .slice()
+      .sort((a, b) => new Date(b.date) - new Date(a.date)) // Sort từ mới nhất
+      .map((notification, index) => (
+        <div
+          key={notification.id || `temp-key-${index}`}
+          className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 cursor-pointer ${
+            notification.isRead === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''
+          }`}
+        >
+          <p
+            className={`font-bold ${
+              notification.isRead === 0
+                ? 'text-black dark:text-white'
+                : 'text-gray-600 dark:text-gray-300'
+            }`}
+          >
+            {notification.content}
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {timeAgo(notification.date)}
+          </p>
+        </div>
+      ))
+  ) : (
+    <p className="text-center text-gray-500 dark:text-gray-400 py-4">
+      Không có thông báo nào.
+    </p>
+  )}
+</div>
+
         </div>
       )}
 

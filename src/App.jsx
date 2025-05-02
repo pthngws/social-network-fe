@@ -16,6 +16,7 @@ import ChatPopup from "./components/ChatPopup";
 import FriendListSidebar from "./components/FriendListSidebar";
 import Loading from "./components/Loading";
 import { startOnlineStatusPing } from "./services/onlineStatusManager";
+import Header from "./components/Header";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -24,12 +25,12 @@ function App() {
   });
   const [selectedFriend, setSelectedFriend] = useState(null);
   const userId = localStorage.getItem("userId");
-  // Logic ping để cập nhật trạng thái online
+
   useEffect(() => {
     if (userId) {
-      console.log("Starting online status ping for userId:", userId); // Debug
+      console.log("Starting online status ping for userId:", userId);
       const stopPing = startOnlineStatusPing(userId);
-      return stopPing; // Cleanup khi userId thay đổi hoặc component unmount
+      return stopPing;
     }
   }, [userId]);
 
@@ -57,11 +58,10 @@ function App() {
         <Router>
           <div className={isDarkMode ? "dark" : ""}>
             <Loading />
-            {/* Nút toggle dark mode */}
             <button
               onClick={toggleDarkMode}
               className={`fixed bottom-5 left-4 w-12 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 ${
-                isDarkMode ? "bg-gray-700" : "bg-blue-400"
+                isDarkMode ? "bg-gray-700" : "bg-divue-400"
               } z-40`}
             >
               <div
@@ -80,7 +80,6 @@ function App() {
             <ChatPopup selectedFriend={selectedFriend} />
 
             <Routes>
-              {/* Public routes */}
               <Route
                 path="/"
                 element={<PublicRoute><Login /></PublicRoute>}
@@ -93,8 +92,7 @@ function App() {
                 path="/register"
                 element={<PublicRoute><Register /></PublicRoute>}
               />
-              {/* Private routes (yêu cầu đăng nhập) */}
-              <Route element={<MainLayout />}>
+              <Route element={<MainLayout selectedFriend={selectedFriend} setSelectedFriend={setSelectedFriend} />}>
                 <Route
                   path="/home"
                   element={
