@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { UserGroupIcon } from '@heroicons/react/24/solid';
+import { FaUserGroup } from "react-icons/fa6";
 import { friendshipService } from '../services/friendshipService';
 import Alert from './ui/Alert';      
 
@@ -100,7 +100,7 @@ const FriendRequestsDropdown = ({ friendRequests, setFriendRequests, showFriendM
         onClick={() => setShowFriendMenu(!showFriendMenu)}
       >
         <span className="absolute w-16 h-16 rounded-full bg-gray-500 dark:bg-gray-400 opacity-0 group-hover:opacity-20 transition-all duration-300"></span>
-        <UserGroupIcon
+        <FaUserGroup
           className="relative h-6 w-6 text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-200"
           title="Lời mời kết bạn"
         />
