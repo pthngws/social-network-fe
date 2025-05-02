@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { userService } from '../services/userService';
 import { postService } from '../services/postService';
 import { friendshipService } from '../services/friendshipService';
+import { onlineStatusService } from '../services/onlineStatusService';
 import Post from '../components/Post';
 import Alert from '../components/ui/Alert';
-import ChatPopup from '../components/ChatPopup'; // Import ChatPopup
-import FriendListSidebar from '../components/FriendListSidebar'; // Import FriendListSidebar
+import ChatPopup from '../components/ChatPopup';
+import FriendListSidebar from '../components/FriendListSidebar';
 
 const UserProfile = () => {
   const { userId } = useParams();
@@ -14,17 +15,15 @@ const UserProfile = () => {
   const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState('timeline');
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
-  // ChatPopup states
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState(null);
   const senderId = String(localStorage.getItem('userId'));
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (userId === senderId) {
       window.location.replace('/profile');
     }
 
-    // Fetch user data
     userService
       .getUserById(userId)
       .then((response) => {
@@ -36,7 +35,6 @@ const UserProfile = () => {
         setAlert({ show: true, type: 'error', message: 'Lỗi lấy thông tin người dùng' });
       });
 
-    // Fetch user posts
     postService
       .getUserPosts(userId)
       .then((response) => {
@@ -77,19 +75,35 @@ const UserProfile = () => {
       });
   };
 
-  const handleInbox = () => {
+  const handleInbox = async () => {
     if (user) {
-      setSelectedFriend({
-        userID: userId,
-        name: `${user.firstName} ${user.lastName}`,
-      });
-      setIsChatOpen(true);
+      try {
+        const [isOnlineResponse, minutesAgoResponse] = await Promise.all([
+          onlineStatusService.isUserOnline(userId),
+          onlineStatusService.getLastSeenMinutesAgo(userId),
+        ]);
+        setSelectedFriend({
+          userID: userId,
+          name: `${user.firstName} ${user.lastName}`,
+          avatar: user.avatar || 'https://via.placeholder.com/32',
+          isOnline: isOnlineResponse.data,
+          minutesAgo: minutesAgoResponse.data,
+        });
+      } catch (error) {
+        console.error('Lỗi lấy trạng thái online:', error);
+        setSelectedFriend({
+          userID: userId,
+          name: `${user.firstName} ${user.lastName}`,
+          avatar: user.avatar || 'https://via.placeholder.com/32',
+          isOnline: false,
+          minutesAgo: null,
+        });
+      }
     }
   };
 
   const handleFriendSelect = (friend) => {
     setSelectedFriend(friend);
-    setIsChatOpen(true);
   };
 
   const getButtonProps = (friendStatus) => {
@@ -108,7 +122,6 @@ const UserProfile = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 px-4 py-8 mt-10">
       <div className="max-w-2xl mx-auto relative">
-        {/* Alert Display */}
         {alert.show && (
           <Alert
             type={alert.type}
@@ -118,7 +131,6 @@ const UserProfile = () => {
           />
         )}
 
-        {/* Profile Header */}
         <div className="flex items-center mb-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
           <img
             src={user?.avatar || '/default-avatar.png'}
@@ -149,7 +161,6 @@ const UserProfile = () => {
           </div>
         </div>
 
-        {/* Tabs */}
         <ul className="flex border-b mb-4 dark:border-gray-700">
           <li>
             <button
@@ -177,7 +188,6 @@ const UserProfile = () => {
           </li>
         </ul>
 
-        {/* Tab Content */}
         {activeTab === 'timeline' && (
           <div className="space-y-4">
             {posts.length > 0 ? (
@@ -188,28 +198,24 @@ const UserProfile = () => {
           </div>
         )}
 
-{activeTab === 'info' && (
-  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-    {/* Birthday Field */}
-    <div className="mb-4">
-      <label className="block font-bold text-gray-900 dark:text-gray-300 mb-2">Ngày sinh</label>
-      <p className="text-gray-900 dark:text-white">
-        {user?.birthday ? new Date(user.birthday).toLocaleDateString('vi-VN') : 'Không xác định'}
-      </p>
-    </div>
-    {/* Gender Field */}
-    <div className="mb-4">
-      <label className="block font-bold text-gray-900 dark:text-gray-300 mb-2">Giới tính</label>
-      <p className="text-gray-900 dark:text-white">
-        {user?.gender === 'Male' ? 'Nam' : user?.gender === 'Female' ? 'Nữ' : 'Không xác định'}
-      </p>
-    </div>
-  </div>
-)}
-        {/* FriendListSidebar */}
-        <FriendListSidebar onFriendSelect={handleFriendSelect} />
+        {activeTab === 'info' && (
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <div className="mb-4">
+              <label className="block font-bold text-gray-900 dark:text-gray-300 mb-2">Ngày sinh</label>
+              <p className="text-gray-900 dark:text-white">
+                {user?.birthday ? new Date(user.birthday).toLocaleDateString('vi-VN') : 'Không xác định'}
+              </p>
+            </div>
+            <div className="mb-4">
+              <label className="block font-bold text-gray-900 dark:text-gray-300 mb-2">Giới tính</label>
+              <p className="text-gray-900 dark:text-white">
+                {user?.gender === 'Male' ? 'Nam' : user?.gender === 'Female' ? 'Nữ' : 'Không xác định'}
+              </p>
+            </div>
+          </div>
+        )}
 
-        {/* ChatPopup */}
+        <FriendListSidebar onFriendSelect={handleFriendSelect} />
         <ChatPopup selectedFriend={selectedFriend} />
       </div>
     </div>

@@ -12,17 +12,16 @@ const FriendListSidebar = ({ onFriendSelect }) => {
       const fetchFriends = async () => {
         try {
           const friends = await friendshipService.getAllFriendships();
-          console.log('Friends list:', friends); // Debug danh sách bạn bè
+          console.log('Friends list:', friends);
           setFriends(Array.isArray(friends) ? friends : []);
 
-          // Lấy trạng thái và số phút kể từ last seen cho từng bạn bè
           const statusPromises = friends.map(friend =>
             Promise.all([
               onlineStatusService.isUserOnline(friend.user.id),
               onlineStatusService.getLastSeenMinutesAgo(friend.user.id)
             ])
               .then(([isOnlineResponse, minutesAgoResponse]) => {
-                console.log(`Status for user ${friend.user.id}: isOnline = ${isOnlineResponse.data}, minutesAgo = ${minutesAgoResponse.data}`); // Debug
+                console.log(`Status for user ${friend.user.id}: isOnline = ${isOnlineResponse.data}, minutesAgo = ${minutesAgoResponse.data}`);
                 return {
                   id: friend.user.id,
                   isOnline: isOnlineResponse.data,
@@ -39,7 +38,7 @@ const FriendListSidebar = ({ onFriendSelect }) => {
             acc[id] = { isOnline, minutesAgo };
             return acc;
           }, {});
-          console.log('Status map:', statusMap); // Debug statusMap
+          console.log('Status map:', statusMap);
           setStatusData(statusMap);
         } catch (error) {
           console.error('Lỗi lấy danh sách bạn bè:', error);
@@ -48,31 +47,26 @@ const FriendListSidebar = ({ onFriendSelect }) => {
       };
       fetchFriends();
 
-      // Cập nhật trạng thái mỗi 30 giây
       const interval = setInterval(fetchFriends, 30000);
       return () => clearInterval(interval);
     }
   }, [userId]);
 
-  // Hàm hiển thị trạng thái
   const getStatusText = (isOnline, minutesAgo) => {
     if (isOnline) {
-      return 'Online';
+      return 'Đang hoạt động';
     }
     if (minutesAgo === null) {
-      return 'Offline';
+      return '';
     }
-    return `Online ${minutesAgo} phút trước`;
+    return `Hoạt động ${minutesAgo} phút trước`;
   };
 
   return (
     <div className="fixed top-20 right-0 w-64 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 flex flex-col z-10">
-      {/* Header của sidebar */}
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Bạn bè</h2>
       </div>
-
-      {/* Danh sách bạn bè */}
       <div className="flex-1 overflow-y-auto custom-scroll p-2">
         {friends.length === 0 ? (
           <p className="text-center text-gray-500 dark:text-gray-400 text-sm pt-4">Chưa có bạn bè</p>
@@ -86,6 +80,9 @@ const FriendListSidebar = ({ onFriendSelect }) => {
                   onFriendSelect({
                     userID: friend.user.id,
                     name: `${friend.user.firstName} ${friend.user.lastName}`,
+                    avatar: friend.user.avatar || 'https://via.placeholder.com/32',
+                    isOnline: statusData[friend.user.id]?.isOnline || false,
+                    minutesAgo: statusData[friend.user.id]?.minutesAgo || null
                   })
                 }
               >

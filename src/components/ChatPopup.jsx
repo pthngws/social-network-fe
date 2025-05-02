@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { messageService } from '../services/messageService';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import { FaComments } from 'react-icons/fa';
-import { BsSun, BsMoon } from 'react-icons/bs';
+
 const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [friends, setFriends] = useState([]);
@@ -14,6 +15,7 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
   const chatBoxRef = useRef(null);
   const chatPopupRef = useRef(null);
   const senderId = String(localStorage.getItem('userId'));
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (propSelectedFriend) {
@@ -21,8 +23,6 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
       setIsOpen(true);
     }
   }, [propSelectedFriend]);
-
-
 
   useEffect(() => {
     if (isOpen) {
@@ -46,8 +46,11 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (chatPopupRef.current && !chatPopupRef.current.contains(event.target) && 
-          !event.target.closest('.chat-bubble-button')) {
+      if (
+        chatPopupRef.current &&
+        !chatPopupRef.current.contains(event.target) &&
+        !event.target.closest('.chat-bubble-button')
+      ) {
         setIsOpen(false);
         setSelectedFriend(null);
       }
@@ -112,8 +115,14 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
     return date.toLocaleDateString();
   };
 
-  const toggleTheme = () => {
-    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  const getStatusText = (isOnline, minutesAgo) => {
+    if (isOnline) {
+      return 'Đang hoạt động';
+    }
+    if (minutesAgo === null) {
+      return '';
+    }
+    return `Hoạt động ${minutesAgo} phút trước`;
   };
 
   return (
@@ -131,13 +140,45 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
         <FaComments className="w-6 h-6" />
       </button>
 
-
       {/* Giao diện Chat */}
       {isOpen && (
-        <div ref={chatPopupRef} className="fixed bottom-5 right-24 w-80 h-[450px] bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-lg flex flex-col z-40">
+        <div
+          ref={chatPopupRef}
+          className="fixed bottom-5 right-24 w-80 h-[450px] bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-lg flex flex-col z-40"
+        >
           <div className="flex justify-between items-center bg-blue-500 text-white p-4 rounded-t-lg">
-            <span className="font-semibold">{selectedFriend ? selectedFriend.name : 'Tin Nhắn'}</span>
-            <button 
+            <div className="flex items-center">
+              {selectedFriend && (
+                <div className="relative mr-2">
+                  <img
+                    src={selectedFriend.avatar || 'https://via.placeholder.com/32'}
+                    alt={selectedFriend.name}
+                    className="w-8 h-8 rounded-full object-cover cursor-pointer"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/32';
+                    }}
+                    onClick={() => navigate(`/${selectedFriend.userID}`)}
+                  />
+                  {selectedFriend.isOnline && (
+                    <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white dark:border-gray-800"></span>
+                  )}
+                </div>
+              )}
+              <div className="flex flex-col">
+                <span
+                  className="font-semibold cursor-pointer"
+                  onClick={() => selectedFriend && navigate(`/${selectedFriend.userID}`)}
+                >
+                  {selectedFriend ? selectedFriend.name : 'Tin Nhắn'}
+                </span>
+                {selectedFriend && (
+                  <span className="text-xs text-blue-200">
+                    {getStatusText(selectedFriend.isOnline, selectedFriend.minutesAgo)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
               onClick={() => {
                 setIsOpen(false);
                 setSelectedFriend(null);
@@ -158,10 +199,27 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
                     onClick={() => setSelectedFriend(friend)}
                   >
                     <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center mr-3">
-                        <span className="text-lg font-semibold">{friend.name.charAt(0)}</span>
+                      <div className="relative">
+                        <img
+                          src={friend.avatar || 'https://via.placeholder.com/32'}
+                          alt={friend.name}
+                          className="w-10 h-10 rounded-full object-cover mr-3"
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/32';
+                          }}
+                        />
+                        {friend.isOnline && (
+                          <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></span>
+                        )}
                       </div>
-                      <span className="font-medium">{friend.name}</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {friend.name}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {getStatusText(friend.isOnline, friend.minutesAgo)}
+                        </span>
+                      </div>
                     </div>
                   </li>
                 ))}
@@ -171,8 +229,13 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
             <>
               <div ref={chatBoxRef} className="p-4 flex-1 overflow-y-auto custom-scroll">
                 {messages.map((msg, index) => {
-                  const showDate = index === 0 || formatDateSeparator(messages[index - 1].timestamp) !== formatDateSeparator(msg.timestamp);
+                  const showDate =
+                    index === 0 ||
+                    formatDateSeparator(messages[index - 1].timestamp) !== formatDateSeparator(msg.timestamp);
                   const isSender = String(msg.senderID) === senderId;
+                  const senderInfo = isSender
+                    ? { avatar: '' }
+                    : selectedFriend;
                   return (
                     <div key={msg.id}>
                       {showDate && (
@@ -182,10 +245,33 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
                           </small>
                         </div>
                       )}
-                      <div className={`flex ${isSender ? 'justify-end' : 'justify-start'} mb-3`}>
-                        <div className={`p-3 rounded-2xl max-w-[80%] ${isSender ? 'bg-blue-500 text-white rounded-tr-none' : 'bg-gray-100 dark:bg-gray-700 text-black dark:text-white rounded-tl-none'}`}>
+                      <div className={`flex ${isSender ? 'justify-end' : 'justify-start'} mb-3 items-start`}>
+                        {!isSender && (
+                          <div className="relative">
+                            <img
+                              src={senderInfo.avatar || 'https://via.placeholder.com/32'}
+                              alt={senderInfo.name}
+                              className="w-8 h-8 rounded-full object-cover mr-2 mt-3 cursor-pointer"
+                              onError={(e) => {
+                                e.target.src = 'https://via.placeholder.com/32';
+                              }}
+                              onClick={() => navigate(`/${msg.senderID}`)}
+                            />
+                          </div>
+                        )}
+                        <div
+                          className={`p-3 rounded-2xl max-w-[80%] ${
+                            isSender
+                              ? 'bg-blue-500 text-white rounded-tr-none'
+                              : 'bg-gray-100 dark:bg-gray-700 text-black dark:text-white rounded-tl-none'
+                          }`}
+                        >
                           <span className="break-words">{msg.contentMessage}</span>
-                          <div className={`text-xs mt-1 ${isSender ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                          <div
+                            className={`text-xs mt-1 ${
+                              isSender ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
+                            }`}
+                          >
                             {formatTime(msg.timestamp)}
                           </div>
                         </div>
