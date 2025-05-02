@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { userService } from '../services/userService';
 import { friendshipService } from '../services/friendshipService';
 import { notifyService } from '../services/notifyService';
+import { messageService } from '../services/messageService';
 import { connectWebSocket, disconnectWebSocket } from '../services/websocketService';
 import LogoAndSearch from './LogoAndSearch';
 import FriendRequestsDropdown from './FriendRequestsDropdown';
@@ -15,6 +16,7 @@ const Header = ({ selectedFriend, setSelectedFriend }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [friendRequests, setFriendRequests] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [friends, setFriends] = useState([]);
   const [showFriendMenu, setShowFriendMenu] = useState(false);
   const [showNotifyMenu, setShowNotifyMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -61,6 +63,18 @@ const Header = ({ selectedFriend, setSelectedFriend }) => {
       }
     };
     fetchNotifications();
+
+    const fetchFriends = async () => {
+      try {
+        const response = await messageService.getFriendList(localStorage.getItem('userId'));
+        console.log('Initial friend list:', response);
+        setFriends(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error('Lỗi lấy danh sách bạn bè:', error);
+        setFriends([]);
+      }
+    };
+    fetchFriends();
   }, []);
 
   useEffect(() => {
@@ -68,9 +82,7 @@ const Header = ({ selectedFriend, setSelectedFriend }) => {
       console.log('Connecting WebSocket for:', userEmail);
       connectWebSocket(userEmail, (notification) => {
         console.log('Received WebSocket notification:', notification);
-
         if (notification.content.includes('đã gửi lời mời kết bạn')) {
-          console.log('Friend request notification detected, fetching requests...');
           friendshipService.getFriendshipRequests()
             .then((requests) => {
               console.log('Updated friend requests:', requests);
@@ -78,7 +90,6 @@ const Header = ({ selectedFriend, setSelectedFriend }) => {
             })
             .catch((error) => console.error('Lỗi cập nhật lời mời kết bạn:', error));
         } else if (notification.content.includes('đã hủy lời mời kết bạn')) {
-          console.log('Friend request cancellation detected, fetching requests...');
           friendshipService.getFriendshipRequests()
             .then((requests) => {
               console.log('Updated friend requests after cancellation:', requests);
@@ -86,7 +97,6 @@ const Header = ({ selectedFriend, setSelectedFriend }) => {
             })
             .catch((error) => console.error('Lỗi cập nhật lời mời kết bạn:', error));
         } else {
-          console.log('General notification detected, fetching notifications...');
           notifyService.getNotifications()
             .then((notifications) => {
               console.log('Updated notifications:', notifications);
@@ -107,6 +117,20 @@ const Header = ({ selectedFriend, setSelectedFriend }) => {
     };
   }, [userEmail]);
 
+  const refreshFriendList = async () => {
+    try {
+      const response = await messageService.getFriendList(localStorage.getItem('userId'));
+      console.log('Refreshed friend list:', response);
+      setFriends(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error('Lỗi làm mới danh sách bạn bè:', error);
+    }
+  };
+
+  const handleFriendSelect = (friend) => {
+    setSelectedFriend({ ...friend, refreshFriendList });
+  };
+
   return (
     <nav className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-4 fixed w-full top-0 z-50 shadow-md">
       <div className="container mx-auto flex items-center justify-between">
@@ -122,7 +146,6 @@ const Header = ({ selectedFriend, setSelectedFriend }) => {
               title="Trang chủ"
             />
           </a>
-          
           <FriendRequestsDropdown
             friendRequests={friendRequests}
             setFriendRequests={setFriendRequests}
@@ -132,7 +155,9 @@ const Header = ({ selectedFriend, setSelectedFriend }) => {
           <ChatListDropdown
             showChatMenu={showChatMenu}
             setShowChatMenu={setShowChatMenu}
-            onFriendSelect={setSelectedFriend}
+            onFriendSelect={handleFriendSelect}
+            friends={friends}
+            refreshFriendList={refreshFriendList} // Thêm prop để sử dụng trực tiếp
           />
           <NotificationsDropdown
             notifications={notifications}

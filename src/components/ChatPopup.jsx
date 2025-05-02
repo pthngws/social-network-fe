@@ -20,21 +20,37 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
     if (propSelectedFriend) {
       setSelectedFriend(propSelectedFriend);
       setIsOpen(true);
+    } else {
+      setIsOpen(false);
+      setSelectedFriend(null);
     }
   }, [propSelectedFriend]);
 
   useEffect(() => {
     if (selectedFriend && isOpen) {
-      // Đánh dấu tin nhắn từ selectedFriend là đã đọc
+      console.log('Opening ChatPopup for friend:', selectedFriend);
+      // Gọi markMessagesAsRead và refreshFriendList
       messageService
         .markMessagesAsRead(selectedFriend.userID)
-        .catch((error) => console.error('Lỗi đánh dấu tin nhắn đã đọc:', error));
+        .then(() => {
+          console.log('Messages marked as read successfully');
+        })
+        .catch((error) => {
+          console.error('Lỗi đánh dấu tin nhắn đã đọc:', error);
+        })
+        .finally(() => {
+          if (selectedFriend.refreshFriendList) {
+            console.log('Calling refreshFriendList after marking messages');
+            selectedFriend.refreshFriendList();
+          }
+        });
 
       connectWebSocket();
       loadMessages();
     }
     return () => {
       if (stompClient) {
+        console.log('Disconnecting WebSocket in ChatPopup');
         stompClient.disconnect();
       }
     };
@@ -59,18 +75,47 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
   }, []);
 
   const connectWebSocket = () => {
+    console.log('Connecting WebSocket in ChatPopup');
     const socket = new SockJS('/ws');
     const client = Stomp.over(socket);
     client.connect({}, () => {
-      client.subscribe('/topic/public', () => loadMessages());
+      console.log('WebSocket connected in ChatPopup');
+      client.subscribe('/topic/public', (message) => {
+        console.log('Received WebSocket message in ChatPopup:', message.body);
+        const receivedMessage = JSON.parse(message.body);
+        if (
+          (String(receivedMessage.senderId) === senderId &&
+            String(receivedMessage.receiverId) === String(selectedFriend.userID)) ||
+          (String(receivedMessage.senderId) === String(selectedFriend.userID) &&
+            String(receivedMessage.receiverId) === senderId)
+        ) {
+          setMessages((prev) => [...prev, {
+            id: Date.now(),
+            contentMessage: receivedMessage.content,
+            senderID: receivedMessage.senderId,
+            timestamp: receivedMessage.timestamp,
+          }]);
+          if (chatBoxRef.current) {
+            chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+          }
+          if (selectedFriend.refreshFriendList) {
+            console.log('Refreshing friend list due to new message');
+            selectedFriend.refreshFriendList();
+          }
+        }
+      });
       setStompClient(client);
-    }, (error) => console.error('WebSocket error:', error));
+    }, (error) => {
+      console.error('WebSocket error in ChatPopup:', error);
+    });
   };
 
   const loadMessages = () => {
     if (selectedFriend) {
+      console.log('Loading messages for friend:', selectedFriend.userID);
       messageService.getMessages(senderId, selectedFriend.userID)
         .then(response => {
+          console.log('Messages loaded:', response.data);
           setMessages(response.data);
           if (chatBoxRef.current) {
             chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
@@ -88,9 +133,9 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
         receiverId: selectedFriend.userID,
         timestamp: new Date().toISOString(),
       };
+      console.log('Sending message:', message);
       stompClient.send('/app/sendMessage', {}, JSON.stringify(message));
       setMessageInput('');
-      loadMessages();
     }
   };
 

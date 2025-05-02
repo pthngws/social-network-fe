@@ -16,7 +16,6 @@ import ChatPopup from "./components/ChatPopup";
 import FriendListSidebar from "./components/FriendListSidebar";
 import Loading from "./components/Loading";
 import { startOnlineStatusPing } from "./services/onlineStatusManager";
-import Header from "./components/Header";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -46,10 +45,6 @@ function App() {
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
-  };
-
-  const handleFriendSelect = (friend) => {
-    setSelectedFriend(friend);
   };
 
   return (
@@ -98,7 +93,7 @@ function App() {
                   element={
                     <PrivateRoute>
                       <Home />
-                      <FriendListSidebar onFriendSelect={handleFriendSelect} />
+                      <FriendListSidebar onFriendSelect={setSelectedFriend} />
                     </PrivateRoute>
                   }
                 />
@@ -107,7 +102,7 @@ function App() {
                   element={
                     <PrivateRoute>
                       <Search />
-                      <FriendListSidebar onFriendSelect={handleFriendSelect} />
+                      <FriendListSidebar onFriendSelect={setSelectedFriend} />
                     </PrivateRoute>
                   }
                 />
@@ -116,7 +111,7 @@ function App() {
                   element={
                     <PrivateRoute>
                       <Profile />
-                      <FriendListSidebar onFriendSelect={handleFriendSelect} />
+                      <FriendListSidebar onFriendSelect={setSelectedFriend} />
                     </PrivateRoute>
                   }
                 />
@@ -125,7 +120,7 @@ function App() {
                   element={
                     <PrivateRoute>
                       <UserProfile />
-                      <FriendListSidebar onFriendSelect={handleFriendSelect} />
+                      <FriendListSidebar onFriendSelect={setSelectedFriend} />
                     </PrivateRoute>
                   }
                 />
