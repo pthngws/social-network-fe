@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { messageService } from '../services/messageService';
+import { FaComments   } from 'react-icons/fa';
 
 const ChatListDropdown = ({ showChatMenu, setShowChatMenu, onFriendSelect }) => {
   const [friends, setFriends] = useState([]);
@@ -87,19 +88,10 @@ const ChatListDropdown = ({ showChatMenu, setShowChatMenu, onFriendSelect }) => 
         }}
       >
         <span className="absolute w-16 h-16 rounded-full bg-gray-500 dark:bg-gray-400 opacity-0 group-hover:opacity-20 transition-all duration-300"></span>
-        <svg
+        <FaComments  
           className="relative h-6 w-6 text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-200"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-          />
-        </svg>
+          title="Thông báo"
+        />
       </button>
 
       {showChatMenu && (

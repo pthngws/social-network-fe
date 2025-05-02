@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserCircleIcon, ArrowLeftEndOnRectangleIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
-
+import { ArrowLeftEndOnRectangleIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { FaSignOutAlt } from "react-icons/fa";
+import { FaGear } from "react-icons/fa6";
 const UserMenuDropdown = ({ user, showUserMenu, setShowUserMenu }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef();
@@ -44,7 +45,10 @@ const UserMenuDropdown = ({ user, showUserMenu, setShowUserMenu }) => {
       {/* Dropdown menu */}
       {showUserMenu && (
         <div className="absolute right-0 mt-3 w-56 rounded-lg shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">
-          <div className="px-4 py-3 flex items-center border-b border-gray-200 dark:border-gray-700">
+          <div
+            className="px-4 py-3 flex items-center border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={() => navigate('/profile')}
+          >
             <img
               src={user?.avatar || '/default-avatar.png'}
               alt="Avatar"
@@ -54,18 +58,19 @@ const UserMenuDropdown = ({ user, showUserMenu, setShowUserMenu }) => {
               {user?.firstName} {user?.lastName}
             </span>
           </div>
-          <a
-            href="/profile"
-            className="flex items-center px-4 py-3 text-sm text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
-          >
-            <UserCircleIcon className="h-5 w-5 mr-2 text-gray-600 dark:text-gray-300" />
-            Trang cá nhân
-          </a>
           <button
-            className="flex items-center w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
+            className="flex items-center w-full text-left px-4 py-3 text-me  hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
+            // onClick={handleLogout}
+          >
+            <FaGear className="h-5 w-5 mr-2" />
+            Cài đặt
+          </button>
+
+          <button
+            className="flex items-center w-full text-left px-4 py-3 text-me text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
             onClick={handleLogout}
           >
-            <ArrowLeftEndOnRectangleIcon className="h-5 w-5 mr-2 text-red-500" />
+            <FaSignOutAlt className="h-5 w-5 mr-2 text-red-500" />
             Đăng xuất
           </button>
         </div>

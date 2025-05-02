@@ -61,7 +61,7 @@ function App() {
             <button
               onClick={toggleDarkMode}
               className={`fixed bottom-5 left-4 w-12 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 ${
-                isDarkMode ? "bg-gray-700" : "bg-divue-400"
+                isDarkMode ? "bg-gray-700" : "bg-gray-300"
               } z-40`}
             >
               <div

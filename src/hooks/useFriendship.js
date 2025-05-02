@@ -1,4 +1,3 @@
-// src/hooks/useFriendship.js
 import { useState, useCallback } from 'react';
 import { friendshipService } from '../services/friendshipService';
 
@@ -12,12 +11,18 @@ const useFriendship = () => {
     setError(null);
     try {
       const response = await friendshipService.getAllFriendships();
-      if (response.data.status === 200) {
+      console.log('Dữ liệu từ API:', response); // Debug
+      // Kiểm tra response và response.data
+      if (response && response.data && response.data.status === 200) {
         setFriends(response.data.data || []);
+      } else if (Array.isArray(response)) {
+        // Xử lý trường hợp API trả về mảng trực tiếp
+        setFriends(response);
       } else {
-        setError('Không thể lấy danh sách bạn bè');
+        setError('Không thể lấy danh sách bạn bè: Dữ liệu không hợp lệ');
       }
     } catch (err) {
+      console.error('Lỗi API:', err); // Debug
       setError(err.message || 'Lỗi lấy danh sách bạn bè');
     } finally {
       setLoading(false);

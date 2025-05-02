@@ -126,9 +126,7 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
                     }}
                     onClick={() => navigate(`/${selectedFriend.userID}`)}
                   />
-                  {selectedFriend.isOnline && (
-                    <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white dark:border-gray-800"></span>
-                  )}
+            
                 </div>
               )}
               <div className="flex flex-col">
@@ -139,10 +137,13 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
                   {selectedFriend ? selectedFriend.name : 'Tin Nhắn'}
                 </span>
                 {selectedFriend && (
-                  <span className="text-xs text-blue-200">
-                    {selectedFriend.isOnline ? 'Đang hoạt động' : `Hoạt động ${selectedFriend.minutesAgo} phút trước`}
-                  </span>
-                )}
+  <span className="text-xs text-blue-200 flex items-center gap-1">
+    {selectedFriend.isOnline && (
+      <span className="w-2 h-2 bg-green-400 rounded-full inline-block"></span>
+    )}
+    {selectedFriend.isOnline ? 'Đang hoạt động' : `Hoạt động ${selectedFriend.minutesAgo} phút trước`}
+  </span>
+)}
               </div>
             </div>
             <button

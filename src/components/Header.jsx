@@ -122,16 +122,17 @@ const Header = ({ selectedFriend, setSelectedFriend }) => {
               title="Trang chủ"
             />
           </a>
-          <ChatListDropdown
-            showChatMenu={showChatMenu}
-            setShowChatMenu={setShowChatMenu}
-            onFriendSelect={setSelectedFriend}
-          />
+          
           <FriendRequestsDropdown
             friendRequests={friendRequests}
             setFriendRequests={setFriendRequests}
             showFriendMenu={showFriendMenu}
             setShowFriendMenu={setShowFriendMenu}
+          />
+          <ChatListDropdown
+            showChatMenu={showChatMenu}
+            setShowChatMenu={setShowChatMenu}
+            onFriendSelect={setSelectedFriend}
           />
           <NotificationsDropdown
             notifications={notifications}
