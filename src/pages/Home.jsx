@@ -6,6 +6,7 @@ import CreatePostModal from '../components/CreatePostModal';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Post from '../components/Post';
+import StoryList from '../components/StoryList';
 
 const Home = () => {
   const { user } = useProfile();
@@ -15,8 +16,12 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 px-4 py-8 mt-10">
       <div className="max-w-2xl mx-auto">
-        <Card className="mb-8">
-          <div className="flex items-center gap-4">
+        {/* Stories Section */}
+        <StoryList />
+
+        {/* Create Post Card */}
+        <Card className="mb-4">
+          <div className="flex items-center gap-4 p-4">
             <img
               src={user?.avatar || '/default-avatar.png'}
               alt="Avatar"
@@ -31,6 +36,7 @@ const Home = () => {
           </div>
         </Card>
 
+        {/* Posts List */}
         {posts.length > 0 ? (
           posts.map(post => <Post key={post.id} post={post} />)
         ) : (
