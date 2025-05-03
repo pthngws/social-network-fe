@@ -166,6 +166,19 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
     return date.toLocaleDateString();
   };
 
+  const formatMinutesAgo = (minutesAgo) => {
+    if (minutesAgo < 60) {
+      return `${minutesAgo} phút trước`;
+    }
+    const hours = Math.floor(minutesAgo / 60);
+    if (hours < 24) {
+      return `${hours} giờ trước`;
+    }
+    const days = Math.floor(hours / 24);
+    return `${days} ngày trước`;
+  };
+  
+
   return (
     <>
       {isOpen && selectedFriend && (
@@ -200,7 +213,7 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
                     {selectedFriend.isOnline && (
                       <span className="w-2 h-2 bg-green-400 rounded-full inline-block"></span>
                     )}
-                    {selectedFriend.isOnline ? 'Đang hoạt động' : `Hoạt động ${selectedFriend.minutesAgo} phút trước`}
+                    {selectedFriend.isOnline ? 'Đang hoạt động' : `Hoạt động ${formatMinutesAgo(selectedFriend.minutesAgo)}`}
                   </span>
                 )}
               </div>

@@ -8,6 +8,7 @@ import Post from '../components/Post';
 import Alert from '../components/ui/Alert';
 import ChatPopup from '../components/ChatPopup';
 import FriendListSidebar from '../components/FriendListSidebar';
+import { FaUserFriends, FaComments, FaUserPlus, FaUserCheck, FaUserTimes, FaUserClock } from 'react-icons/fa';
 
 const UserProfile = () => {
   const { userId } = useParams();
@@ -109,13 +110,33 @@ const UserProfile = () => {
   const getButtonProps = (friendStatus) => {
     switch (friendStatus) {
       case 'PENDING':
-        return { text: 'Hủy yêu cầu', action: () => handleFriendAction('cancel') };
+        return { 
+          text: 'Hủy yêu cầu', 
+          action: () => handleFriendAction('cancel'),
+          icon: <FaUserTimes />,
+          bgColor: 'bg-red-500 hover:bg-red-600'
+        };
       case 'ACCEPTED':
-        return { text: 'Bạn bè', action: () => handleFriendAction('cancel') };
+        return { 
+          text: 'Bạn bè', 
+          action: () => handleFriendAction('cancel'),
+          icon: <FaUserCheck />,
+          bgColor: 'bg-gray-500 hover:bg-gray-600'
+        };
       case 'SENT_BY_OTHER':
-        return { text: 'Chấp nhận', action: () => handleFriendAction('accept') };
+        return { 
+          text: 'Chấp nhận', 
+          action: () => handleFriendAction('accept'),
+          icon: <FaUserCheck />,
+          bgColor: 'bg-blue-500 hover:bg-blue-600'
+        };
       default:
-        return { text: 'Kết bạn', action: () => handleFriendAction('send') };
+        return { 
+          text: 'Kết bạn', 
+          action: () => handleFriendAction('send'),
+          icon: <FaUserPlus />,
+          bgColor: 'bg-blue-500 hover:bg-blue-600'
+        };
     }
   };
 
@@ -144,17 +165,20 @@ const UserProfile = () => {
             <p className="text-gray-500 dark:text-gray-400">{user?.about}</p>
             <div className="flex space-x-2 mt-4">
               <button
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition"
+                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded flex items-center space-x-2 transition"
                 onClick={handleInbox}
               >
-                Nhắn tin
+                <FaComments />
+                <span>Nhắn tin</span>
               </button>
+
               {user && (
                 <button
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition"
+                  className={`${getButtonProps(user.friendStatus).bgColor} text-white px-4 py-2 rounded flex items-center space-x-2 transition`}
                   onClick={getButtonProps(user.friendStatus).action}
                 >
-                  {getButtonProps(user.friendStatus).text}
+                  {getButtonProps(user.friendStatus).icon}
+                  <span>{getButtonProps(user.friendStatus).text}</span>
                 </button>
               )}
             </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { postService } from '../services/postService';
@@ -37,21 +36,33 @@ const Post = ({ post }) => {
 
   // Emoji 3D từ Google Noto Emoji
   const reactionEmojis = {
-    LIKE: 'https://scontent.fsgn9-1.fna.fbcdn.net/m1/v/t6/An-HX414PnqCVzyEq9OFFdayyrdj8c3jnyPbPcierija6hpzsUvw-1VPQ260B2M9EbxgmP7pYlNQSjYAXF782_vnvvpDLxvJQD74bwdWEJ0DhcErkDga6gazZZUYm_Q.png?_nc_gid=Dj21UDlmaUoopm1eFbV1Iw&_nc_oc=AdlpcCmE-lLMXwO1IuJq24uQaqHEZ9ujWyy_YW76XsLzVkDoJlpU5J-5-o-BQxSLJjQ&ccb=10-5&oh=00_AfGzfl8-qys7Wlbffu-vivv1OMrsqRXH0ms_V-GfO2MrKQ&oe=683C6323&_nc_sid=7da55a',
-    LOVE: 'https://scontent.fsgn9-1.fna.fbcdn.net/m1/v/t6/An8VnwvdkGMXIQcr4C62IqyP-g1O5--yQu9PnL-k4yvIbj8yTSE32ea4ORp0OwFNGEWJbb86MHBaLY-SMvUKdUYJnNFcexEoUGoVzcVd50SaAIzBE-K5dxR8Y-MJn5E.png?_nc_gid=Dj21UDlmaUoopm1eFbV1Iw&_nc_oc=AdkMHh6gH1jSb0ViATODjElha8HM3h0r7a5hL6WUenRZ8SydxxUrSCXQpbqArG55Uf4&ccb=10-5&oh=00_AfHuBJUxjFS7hAgDwBWfX68KPBwWUwhJqJ7g4q5sZHt4nw&oe=683C66CC&_nc_sid=7da55a',
-    HAHA: 'https://scontent.fsgn9-1.fna.fbcdn.net/m1/v/t6/An8jKAygX0kuKnUS351UNmsULZ5k4-fMTFmFHmO7SrQJO1CWNfvoTzEEAr5ZjSoZJRjncZcWMCU1B4of5Vw7bMygV5NmjoeSdthAyQVsakIDduXmYDseOeVRf40MOA.png?_nc_gid=Dj21UDlmaUoopm1eFbV1Iw&_nc_oc=Adm0JLkE8jgq6zLk9iBDZs4PN2g8ATBW4C9y9y03MjzwEpojox8lXW3S0pHloSaFvTs&ccb=10-5&oh=00_AfF0Q-y2m_PPt53oy-NHAbQ9NrMGV4FW5azifsf9uAHx-g&oe=683C4D82&_nc_sid=7da55a',
-    WOW: 'https://scontent.fsgn9-1.fna.fbcdn.net/m1/v/t6/An-r5ENfro_aq4TtchBwMAVpq461_uMMZX8CbykXeZm3K5tLEtYF2nA1Pcw8d0sbbq0OlIGksDIXALp3ar6dWf5LBjKs9OFlVqQY0wT42aI9jmUG62LKClEYB7Msj7Q.png?_nc_gid=Dj21UDlmaUoopm1eFbV1Iw&_nc_oc=AdkolXF34OvFyBrReRO8cIJ_JFdHq3ezEuqaa6ohw_fc_3Jtr8jhgl5DiPp9QQvZYlc&ccb=10-5&oh=00_AfER6_WReTUGK2nOIa0AK4ktFgi1-ymTTTpP6u2E7u_a_Q&oe=683C58B9&_nc_sid=7da55a',
-    SAD: 'https://scontent.fsgn9-1.fna.fbcdn.net/m1/v/t6/An855a_dxeehKWf2PSOqZw5jG_X5jD0RtPu4XCOJEiUkOgEjN08FocslKz_Ex-1X4l2nyxwET8fM7vQtp4UWea1ndn808NC5OXHaPll4vMdgaoE8ttu-hOlUSetdVjU.png?_nc_gid=Dj21UDlmaUoopm1eFbV1Iw&_nc_oc=Adm62hvO171Trfmy_jNSj3omtuYk5Tp2N01iUUk5OrbkFfZOAakv8Wk--48wlBu5LNU&ccb=10-5&oh=00_AfFZ8PIm1YBAv-VNLPHDTT5X_UE5oDGmEtSLpbcnH5Zl9Q&oe=683C6824&_nc_sid=7da55a',
-    ANGRY: 'https://scontent.fsgn9-1.fna.fbcdn.net/m1/v/t6/An_Kxv0415wrA-V1YfHx4Lrvz7cMBldm1aIgu7NFAwLZBZOW9arIVnwWvl92bNi1o7aAznMB71wcNm720S1vo-auiHNSzJYNRC76y9-gM2tXjboi4oyx0fwXyEYafhA9.png?_nc_gid=EoavgyDbhHzv-wX-yceXiA&_nc_oc=AdnIduJlmOPCI6rQnJU0Mrq3Jh93GK9tNCXoZzjoi2LyBbBTBZWrHs8CeDbBdStSfYY&ccb=10-5&oh=00_AfEWKtps3y5eKG6BQqxKfbURi-vNKBN2BAjQSZmv2L2adQ&oe=683C4B9F&_nc_sid=7da55a',
+    LIKE: '/emojis/like.svg',
+    LOVE: '/emojis/love.svg',
+    CARE: '/emojis/care.svg',
+    HAHA: '/emojis/haha.svg',
+    WOW: '/emojis/wow.svg',
+    SAD: '/emojis/sad.svg',
+    ANGRY: '/emojis/angry.svg',
   };
 
   const reactionLabels = {
     LIKE: 'Thích',
-    LOVE: 'Yêu thích',
+    LOVE: 'Yêu thích', 
+    CARE: 'Thương thương',
     HAHA: 'Haha',
     WOW: 'Wow',
     SAD: 'Buồn',
     ANGRY: 'Phẫn nộ',
+  };
+
+  const reactionColors = {
+    LIKE: 'text-blue-500',
+    CARE: 'text-yellow-500',
+    LOVE: 'text-red-500', // ❤️ Màu đỏ
+    HAHA: 'text-yellow-500', // 😂 Màu vàng
+    WOW: 'text-yellow-500', // 😮 Màu tím
+    SAD: 'text-yellow-500', // 😢 Màu xanh lam
+    ANGRY: 'text-orange-500', // 😣 Màu cam
   };
 
   const timeAgo = (timestamp) => {
@@ -97,7 +108,7 @@ const Post = ({ post }) => {
   };
 
   const handleMouseEnter = () => {
-    console.log('Mouse entered'); // Debug
+    console.log('Mouse entered');
     if (reactionMenuTimeout.current) {
       clearTimeout(reactionMenuTimeout.current);
     }
@@ -105,10 +116,9 @@ const Post = ({ post }) => {
   };
 
   const handleMouseLeave = () => {
-    console.log('Mouse left'); // Debug
     reactionMenuTimeout.current = setTimeout(() => {
       setShowReactionMenu(false);
-    }, 500);
+    }, 200); // Delay 200ms
   };
 
   const handleComment = async () => {
@@ -395,17 +405,17 @@ const Post = ({ post }) => {
       {/* Content */}
       <div className="p-4">
         <p className="text-base text-gray-900 dark:text-gray-200 leading-relaxed mb-4">{post.content}</p>
-        {post.media && post.media.length > 0 && (
+        {post.mediaUrls && post.mediaUrls.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 mt-2">
-            {post.media.map((mediaItem) => {
-              const mediaUrl = mediaItem.media.url;
+            {post.mediaUrls.map((mediaUrl) => {
               const mediaType = mediaUrl.split('.').pop().toLowerCase();
-              const isImage = mediaType === 'jpg' || mediaType === 'jpeg' || mediaType === 'png';
+              const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+              const isImage = imageExtensions.includes(mediaType);
 
               return (
                 <div
                   key={mediaUrl}
-                  className="overflow-hidden rounded-lg aspect-w-16 aspect-h-9 cursor-pointer"
+                  className="overflow-hidden rounded-lg"
                   onClick={() => handleMediaClick(mediaUrl, isImage ? 'image' : 'video')}
                 >
                   {isImage ? (
@@ -414,11 +424,17 @@ const Post = ({ post }) => {
                       alt="Media"
                       className="w-full h-full object-cover rounded-lg transition-transform duration-300 hover:scale-105"
                       loading="lazy"
+                      onError={(e) => {
+                        console.error('Image load failed:', mediaUrl);
+                        e.target.src = '/fallback-image.png';
+                      }}
                     />
                   ) : (
                     <video
                       src={mediaUrl}
                       className="w-full h-full object-cover rounded-lg"
+                      controls
+                      onError={(e) => console.error('Video load failed:', mediaUrl)}
                     />
                   )}
                 </div>
@@ -439,7 +455,7 @@ const Post = ({ post }) => {
                 style={{ zIndex: sortedReactions.length - index, marginLeft: index > 0 ? '-8px' : '0' }}
               >
                 <img
-                  src={reactionEmojis[type]}
+                  src={type === 'LIKE' ? '/emojis/like.png' : reactionEmojis[type]}
                   alt={type}
                   className="w-5 h-5"
                 />
@@ -453,19 +469,19 @@ const Post = ({ post }) => {
       {/* Interaction Bar */}
       <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-600 flex justify-between items-center">
         <div
-          className="relative"
+          className="relative pointer-events-auto"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
           <button
-            className={`flex items-center space-x-2 text-base font-medium ${reactionType ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'} hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg px-3 py-2 transition-all duration-200`}
+            className={`flex items-center space-x-2 text-lg font-medium ${reactionType ? reactionColors[reactionType] : 'text-gray-500 dark:text-gray-400'} hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg px-4 py-2 transition-all duration-200`}
             onClick={handleLikeClick}
             aria-label="React to post"
           >
             {reactionType ? (
-              <img src={reactionEmojis[reactionType]} alt={reactionType} className="w-5 h-5" />
+              <img src={reactionEmojis[reactionType]} alt={reactionType} className="w-6 h-6" />
             ) : (
-              <img src={reactionEmojis.LIKE} alt="LIKE" className="w-5 h-5" />
+              <img src={reactionEmojis.LIKE} alt="LIKE" className="w-6 h-6" />
             )}
             <span>{reactionType ? reactionLabels[reactionType] : 'Thích'}</span>
           </button>
@@ -476,26 +492,28 @@ const Post = ({ post }) => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute -top-16 left-0 bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 flex space-x-2 p-2 z-[100]"
+                className="absolute -top-20 left-0 flex space-x-3 p-3 rounded-lg shadow-lg border bg-white dark:bg-gray-700 z-[3000]"
+                style={{
+                  minHeight: 60,
+                  border: '2px solid #e5e7eb',
+                }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
-                {console.log('Reaction menu rendered')} {/* Debug */}
-                {['LIKE', 'LOVE', 'HAHA', 'WOW', 'SAD', 'ANGRY'].map((type) => (
-                  <motion.button
+                {['LIKE', 'LOVE','CARE', 'HAHA', 'WOW', 'SAD', 'ANGRY'].map((type) => (
+                  <div
                     key={type}
-                    whileHover={{ scale: 1.3 }}
-                    transition={{ duration: 0.2 }}
-                    className="p-1 rounded-full"
+                    className="relative cursor-pointer"
                     onClick={() => handleReact(type)}
-                    aria-label={`React ${type}`}
                   >
-                    <img
-                      src={reactionEmojis[type]}
-                      alt={type}
-                      className="w-6 h-6"
-                    />
-                  </motion.button>
+                    <div className="w-12 h-12 hover:scale-125 transition-transform duration-200 flex items-center justify-center">
+                      <img
+                        src={reactionEmojis[type]}
+                        alt={type}
+                        className="w-10 h-10"
+                      />
+                    </div>
+                  </div>
                 ))}
               </motion.div>
             )}
