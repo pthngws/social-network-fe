@@ -16,7 +16,7 @@
     "autoprefixer": "^10.4.21",
     "axios": "^1.9.0",
     "emoji-picker-react": "^4.12.2",
-    "framer-motion": "file:latest",
+    "framer-motion": "^12.9.4",
     "init": "^0.1.2",
     "npx": "^10.2.2",
     "postcss": "^8.5.3",

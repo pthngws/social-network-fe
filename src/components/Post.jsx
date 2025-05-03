@@ -10,11 +10,11 @@ import CreatePostModal from './CreatePostModal';
 import MediaPreviewModal from './MediaPreviewModal';
 import { useApiLoading } from '../hooks/useApiLoading';
 import {
-  ChatBubbleLeftIcon,
   EllipsisHorizontalIcon,
 } from '@heroicons/react/24/solid';
 import { FaReply } from 'react-icons/fa';
 import { IoSend } from 'react-icons/io5';
+import { FaRegComment } from "react-icons/fa6";
 
 const Post = ({ post }) => {
   const [reactionType, setReactionType] = useState(post.reactionType || null);
@@ -36,6 +36,7 @@ const Post = ({ post }) => {
 
   // Emoji 3D từ Google Noto Emoji
   const reactionEmojis = {
+    ICON_LIKE: '/emojis/iconlike.png',
     LIKE: '/emojis/like.svg',
     LOVE: '/emojis/love.svg',
     CARE: '/emojis/care.svg',
@@ -481,7 +482,7 @@ const Post = ({ post }) => {
             {reactionType ? (
               <img src={reactionEmojis[reactionType]} alt={reactionType} className="w-6 h-6" />
             ) : (
-              <img src={reactionEmojis.LIKE} alt="LIKE" className="w-6 h-6" />
+              <img src={reactionEmojis.ICON_LIKE} alt="LIKE" className="w-6 h-6" />
             )}
             <span>{reactionType ? reactionLabels[reactionType] : 'Thích'}</span>
           </button>
@@ -524,7 +525,7 @@ const Post = ({ post }) => {
           onClick={handleToggleComments}
           aria-label="Toggle comments"
         >
-          <ChatBubbleLeftIcon className="h-6 w-6" />
+          <FaRegComment className="h-6 w-6" />
           <span>Bình luận {comments.length > 0 ? `(${comments.length})` : ''}</span>
         </button>
       </div>
