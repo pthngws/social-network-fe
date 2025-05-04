@@ -16,7 +16,7 @@ const REACTION_TYPES = {
   ANGRY: { icon: '/emojis/angry.svg', label: 'Phẫn nộ' }
 };
 
-const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPrevious, onDelete }) => {
+const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPrevious, onDelete, audioRefs }) => {
   const [currentStory, setCurrentStory] = useState(null);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -36,10 +36,10 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
     return url?.toLowerCase().includes('.mp4') || url?.toLowerCase().includes('.webm');
   };
 
-  // Sort stories - current user's stories first
+  // Sort stories - keep original order
   useEffect(() => {
     if (!allStories?.length) return;
-    setSortedStories([...allStories]); // Không sắp xếp lại, giữ nguyên thứ tự từ StoryList
+    setSortedStories([...allStories]);
   }, [allStories]);
 
   // Get current story's siblings (other stories from same user)
@@ -53,10 +53,19 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
       clearInterval(progressInterval.current);
     }
 
-    const duration = currentStory && isVideo(currentStory.content) && videoRef.current 
-      ? videoRef.current.duration * 1000 
-      : IMAGE_DURATION;
-    
+    // Determine duration based on music or content
+    let duration;
+    if (currentStory?.musicUrl && currentStory?.musicDuration) {
+      // Use musicDuration (in seconds) converted to milliseconds
+      duration = currentStory.musicDuration * 1000;
+    } else if (currentStory && isVideo(currentStory.content) && videoRef.current) {
+      // Use video duration for videos without music
+      duration = videoRef.current.duration * 1000;
+    } else {
+      // Fallback to IMAGE_DURATION for images without music
+      duration = IMAGE_DURATION;
+    }
+
     const increment = 100 / (duration / 100);
 
     progressInterval.current = setInterval(() => {
@@ -71,18 +80,12 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
     }, 100);
   };
 
+  // Load story data
   useEffect(() => {
     const loadStory = async () => {
       try {
         const story = sortedStories[currentIndex];
         if (!story) return;
-
-        // Check if story is expired
-        const expiresAt = new Date(story.expiresAt);
-        if (expiresAt < new Date()) {
-          onNext();
-          return;
-        }
 
         console.log('Loading story:', story);
         
@@ -99,7 +102,6 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
         // Gọi API đánh dấu đã xem story và lưu vào localStorage
         if (!isOwner) {
           await storyService.viewStory(story.id);
-          // Lưu story ID vào localStorage
           const viewedStories = JSON.parse(localStorage.getItem('viewedStories') || '[]');
           if (!viewedStories.includes(story.id)) {
             viewedStories.push(story.id);
@@ -116,20 +118,72 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
         }
 
         // Handle audio
-        if (audioRef.current) {
-          audioRef.current.currentTime = 0;
-          if (!isMuted && story.musicUrl) {
+        if (audioRefs && audioRefs[story.id] && story.musicUrl) {
+          audioRef.current = audioRefs[story.id]; // Use preloaded audio
+          audioRef.current.muted = isMuted;
+
+          // Wait for metadata to load (should be fast since preloaded)
+          await new Promise((resolve, reject) => {
+            if (audioRef.current.readyState >= 2) {
+              // Metadata already loaded
+              const audioDuration = audioRef.current.duration;
+              const musicStart = Math.max(0, story.musicStart || 0);
+              const musicDuration = Math.min(
+                story.musicDuration || audioDuration,
+                audioDuration - musicStart
+              );
+              audioRef.current.currentTime = musicStart;
+              setIsAudioReady(true);
+              resolve();
+            } else {
+              audioRef.current.onloadedmetadata = () => {
+                if (audioRef.current) {
+                  const audioDuration = audioRef.current.duration;
+                  const musicStart = Math.max(0, story.musicStart || 0);
+                  const musicDuration = Math.min(
+                    story.musicDuration || audioDuration,
+                    audioDuration - musicStart
+                  );
+                  audioRef.current.currentTime = musicStart;
+                  setIsAudioReady(true);
+                  resolve();
+                }
+              };
+              audioRef.current.onerror = () => {
+                console.error('Error loading audio metadata');
+                setIsAudioReady(true); // Proceed even if audio fails
+                reject();
+              };
+            }
+          });
+
+          // Play audio if not muted
+          if (!isMuted) {
             try {
-              const playPromise = audioRef.current.play();
-              if (playPromise !== undefined) {
-                await playPromise;
-                console.log('Music started playing successfully');
-                setIsAudioReady(true);
-              }
+              await audioRef.current.play();
+              console.log('Music started playing successfully at', story.musicStart, 'for', story.musicDuration, 'seconds');
             } catch (error) {
               console.error('Music playback failed:', error);
             }
           }
+
+          // Stop audio when the segment ends
+          const checkAudioTime = () => {
+            if (audioRef.current && audioRef.current.currentTime >= story.musicStart + story.musicDuration) {
+              audioRef.current.pause();
+              audioRef.current.currentTime = story.musicStart; // Reset to start
+            }
+          };
+          audioRef.current.addEventListener('timeupdate', checkAudioTime);
+
+          // Cleanup timeupdate listener
+          return () => {
+            if (audioRef.current) {
+              audioRef.current.removeEventListener('timeupdate', checkAudioTime);
+            }
+          };
+        } else {
+          setIsAudioReady(true); // No audio, proceed immediately
         }
 
         // Start progress after everything is loaded
@@ -150,7 +204,30 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
         audioRef.current.pause();
       }
     };
-  }, [currentIndex, sortedStories]);
+  }, [currentIndex, sortedStories, isMuted, audioRefs]);
+
+  // Check for expired story
+  useEffect(() => {
+    if (!currentStory) return;
+
+    const expiresAt = new Date(currentStory.expiresAt);
+    if (expiresAt < new Date()) {
+      onNext();
+    }
+  }, [currentStory, onNext]);
+
+  useEffect(() => {
+    // Sync audio with pause/resume
+    if (audioRef.current && currentStory?.musicUrl) {
+      if (isPaused) {
+        audioRef.current.pause();
+      } else if (!isMuted && isAudioReady) {
+        audioRef.current.play().catch(error => {
+          console.error('Error resuming audio:', error);
+        });
+      }
+    }
+  }, [isPaused, isMuted, isAudioReady, currentStory]);
 
   const handleReact = async (reactionType) => {
     try {
@@ -159,7 +236,6 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
       if (response.data.status === 200) {
         setSelectedReaction(reactionType);
         
-        // Nếu là chủ story thì update lại danh sách tương tác
         if (isStoryOwner) {
           const interactionsResponse = await storyService.getStoryInteractions(currentStory.id);
           if (interactionsResponse.data.status === 200) {
@@ -207,10 +283,14 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
     setIsPaused(false);
     startProgress();
     if (videoRef.current) {
-      videoRef.current.play();
+      videoRef.current.play().catch(error => {
+        console.error('Error resuming video:', error);
+      });
     }
-    if (audioRef.current && !isMuted) {
-      audioRef.current.play();
+    if (audioRef.current && !isMuted && isAudioReady) {
+      audioRef.current.play().catch(error => {
+        console.error('Error resuming audio:', error);
+      });
     }
   };
 
@@ -263,7 +343,7 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
       {/* Story Container */}
       <div className="relative max-w-md w-full h-[80vh] bg-gray-900 rounded-xl overflow-hidden">
         {/* Progress Bars */}
-        {currentStory && (
+        {currentStory && shouldShowProgress && (
           <StoryProgressBar
             stories={getCurrentUserStories()}
             currentStoryIndex={getCurrentUserStories().findIndex(s => s.id === currentStory.id)}
@@ -334,15 +414,6 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
           {/* Music Player */}
           {currentStory.musicUrl && (
             <>
-              <audio
-                ref={audioRef}
-                src={currentStory.musicUrl}
-                loop
-                muted={isMuted}
-                onError={(e) => console.error('Audio error:', e)}
-                onPlay={() => console.log('Audio started playing')}
-                onPause={() => console.log('Audio paused')}
-              />
               <div className="absolute bottom-20 left-4 right-4 flex items-center justify-between">
                 <div className="flex items-center bg-black/40 rounded-full px-4 py-2">
                   <span className="text-white mr-3">
@@ -458,7 +529,7 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
         onClick={onNext}
         className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-3 rounded-full hover:bg-black/60 transition-all transform hover:scale-110 z-20"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
         </svg>
       </button>
@@ -466,4 +537,4 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
   );
 };
 
-export default StoryViewer; 
+export default StoryViewer;

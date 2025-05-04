@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { storyService } from '../services/storyService';
@@ -13,14 +13,37 @@ const StoryList = () => {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const audioRefs = useRef({});
   const currentUserId = localStorage.getItem('userId');
 
   const checkStoriesViewed = (userStories) => {
-    // Kiểm tra nếu tất cả stories của user đó đã được xem
     return userStories.every(story => {
       const viewedStories = JSON.parse(localStorage.getItem('viewedStories') || '[]');
       return viewedStories.includes(story.id);
     });
+  };
+
+  const preloadAudio = (story) => {
+    if (story.musicUrl && !audioRefs.current[story.id]) {
+      const audio = new Audio();
+      audio.src = story.musicUrl;
+      audio.preload = 'auto';
+      audio.onloadedmetadata = () => {
+        console.log(`Preloaded audio for story ${story.id}: ${story.musicUrl}`);
+      };
+      audio.onerror = () => {
+        console.error(`Failed to preload audio for story ${story.id}: ${story.musicUrl}`);
+      };
+      audioRefs.current[story.id] = audio;
+    }
+  };
+
+  const cleanupAudio = () => {
+    Object.values(audioRefs.current).forEach(audio => {
+      audio.pause();
+      audio.src = '';
+    });
+    audioRefs.current = {};
   };
 
   const loadStories = async () => {
@@ -29,6 +52,12 @@ const StoryList = () => {
       const response = await storyService.getAllStories();
       if (response.data.status === 200) {
         setStories(response.data.data);
+        // Preload audio for each story with musicUrl
+        response.data.data.forEach(story => {
+          if (story.musicUrl) {
+            preloadAudio(story);
+          }
+        });
       }
     } catch (error) {
       console.error('Error loading stories:', error);
@@ -39,6 +68,9 @@ const StoryList = () => {
 
   useEffect(() => {
     loadStories();
+    return () => {
+      cleanupAudio();
+    };
   }, []);
 
   useEffect(() => {
@@ -92,13 +124,11 @@ const StoryList = () => {
   };
 
   const handleStoryClick = (clickedStoryId) => {
-    // Tìm group chứa story được click
     const groupIndex = sortedStories.findIndex(group => 
       group.stories.some(story => story.id === clickedStoryId)
     );
 
     if (groupIndex !== -1) {
-      // Tạo mảng stories mới, giữ nguyên thứ tự từ group được click
       const allStoriesInOrder = sortedStories.flatMap(group => group.stories);
       const storyIndex = allStoriesInOrder.findIndex(story => story.id === clickedStoryId);
       
@@ -139,7 +169,13 @@ const StoryList = () => {
   const handleDeleteStory = async (storyId) => {
     try {
       await storyService.deleteStory(storyId);
-      await loadStories(); // Reload stories after deletion
+      // Remove preloaded audio for deleted story
+      if (audioRefs.current[storyId]) {
+        audioRefs.current[storyId].pause();
+        audioRefs.current[storyId].src = '';
+        delete audioRefs.current[storyId];
+      }
+      await loadStories();
     } catch (error) {
       console.error('Error deleting story:', error);
     }
@@ -234,6 +270,7 @@ const StoryList = () => {
           onNext={handleNext}
           onPrevious={handlePrevious}
           onDelete={handleDeleteStory}
+          audioRefs={audioRefs.current}
         />
       )}
 
@@ -247,4 +284,4 @@ const StoryList = () => {
   );
 };
 
-export default StoryList; 
+export default StoryList;

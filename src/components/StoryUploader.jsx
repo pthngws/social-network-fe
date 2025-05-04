@@ -10,6 +10,8 @@ import { useApiLoading } from '../hooks/useApiLoading';
 const StoryUploader = () => {
   const [mediaFile, setMediaFile] = useState(null);
   const [musicId, setMusicId] = useState('');
+  const [musicStart, setMusicStart] = useState(0);
+  const [musicDuration, setMusicDuration] = useState(30);
   const [musics, setMusics] = useState([]);
   const [previewUrl, setPreviewUrl] = useState('');
   const [error, setError] = useState(null);
@@ -61,6 +63,8 @@ const StoryUploader = () => {
       formData.append('media', mediaFile);
       if (musicId) {
         formData.append('musicId', musicId);
+        formData.append('musicStart', musicStart);
+        formData.append('musicDuration', musicDuration);
       }
 
       const response = await storyService.createStory(formData);
@@ -68,6 +72,8 @@ const StoryUploader = () => {
         setStoryId(response.data.data.id);
         handleRemoveFile();
         setMusicId('');
+        setMusicStart(0);
+        setMusicDuration(30);
         setError(null);
       }
     } catch (err) {
@@ -162,6 +168,40 @@ const StoryUploader = () => {
           </select>
         </div>
 
+        {/* Music Timing Sliders */}
+        {musicId && (
+          <div className="mt-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Thời gian bắt đầu: {musicStart} giây
+              </label>
+              <input
+                type="range"
+                value={musicStart}
+                onChange={(e) => setMusicStart(Number(e.target.value))}
+                min="0"
+                max="120"
+                step="1"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-600"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Thời lượng: {musicDuration} giây
+              </label>
+              <input
+                type="range"
+                value={musicDuration}
+                onChange={(e) => setMusicDuration(Number(e.target.value))}
+                min="1"
+                max="60"
+                step="1"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-600"
+              />
+            </div>
+          </div>
+        )}
+
         {/* Error Alert */}
         {error && (
           <Alert
@@ -227,4 +267,4 @@ const StoryUploader = () => {
   );
 };
 
-export default StoryUploader; 
+export default StoryUploader;
