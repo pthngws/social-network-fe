@@ -11,6 +11,7 @@ import UserProfile from "./pages/UserProfile";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 import { FilterProvider } from "./contexts/FilterContext";
 import { LoadingProvider } from "./contexts/LoadingContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import MainLayout from "./layouts/MainLayout";
 import ChatPopup from "./components/ChatPopup";
 import FriendListSidebar from "./components/FriendListSidebar";
@@ -53,79 +54,76 @@ function App() {
         <Router>
           <div className={isDarkMode ? "dark" : ""}>
             <Loading />
+            
+            {/* Dark mode toggle */}
             <button
+              className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
               onClick={toggleDarkMode}
-              className={`fixed bottom-5 left-4 w-12 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 ${
-                isDarkMode ? "bg-gray-700" : "bg-gray-300"
-              } z-40`}
+              aria-label="Toggle dark mode"
             >
-              <div
-                className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center ${
-                  isDarkMode ? "translate-x-6" : "translate-x-0"
-                }`}
-              >
-                {isDarkMode ? (
-                  <MoonIcon className="w-3 h-3 text-gray-700" />
-                ) : (
-                  <SunIcon className="w-3 h-3 text-blue-500" />
-                )}
-              </div>
+              {isDarkMode ? (
+                <SunIcon className="h-6 w-6 text-yellow-400" />
+              ) : (
+                <MoonIcon className="h-6 w-6 text-gray-700" />
+              )}
             </button>
 
-            <ChatPopup selectedFriend={selectedFriend} />
-
-            <Routes>
-              <Route
-                path="/"
-                element={<PublicRoute><Login /></PublicRoute>}
-              />
-              <Route
-                path="/login"
-                element={<PublicRoute><Login /></PublicRoute>}
-              />
-              <Route
-                path="/register"
-                element={<PublicRoute><Register /></PublicRoute>}
-              />
-              <Route element={<MainLayout selectedFriend={selectedFriend} setSelectedFriend={setSelectedFriend} />}>
+            <AuthProvider>
+              <Routes>
                 <Route
-                  path="/home"
-                  element={
-                    <PrivateRoute>
-                      <Home />
-                      <FriendListSidebar onFriendSelect={setSelectedFriend} />
-                    </PrivateRoute>
-                  }
+                  path="/"
+                  element={<PublicRoute><Login /></PublicRoute>}
                 />
                 <Route
-                  path="/search/:name"
-                  element={
-                    <PrivateRoute>
-                      <Search />
-                      <FriendListSidebar onFriendSelect={setSelectedFriend} />
-                    </PrivateRoute>
-                  }
+                  path="/login"
+                  element={<PublicRoute><Login /></PublicRoute>}
                 />
                 <Route
-                  path="/profile"
-                  element={
-                    <PrivateRoute>
-                      <Profile />
-                      <FriendListSidebar onFriendSelect={setSelectedFriend} />
-                    </PrivateRoute>
-                  }
+                  path="/register"
+                  element={<PublicRoute><Register /></PublicRoute>}
                 />
-                <Route
-                  path="/:userId"
-                  element={
-                    <PrivateRoute>
-                      <UserProfile />
-                      <FriendListSidebar onFriendSelect={setSelectedFriend} />
-                    </PrivateRoute>
-                  }
-                />
-              </Route>
-            </Routes>
+                <Route element={<MainLayout selectedFriend={selectedFriend} setSelectedFriend={setSelectedFriend} />}>
+                  <Route
+                    path="/home"
+                    element={
+                      <PrivateRoute>
+                        <Home />
+                        <FriendListSidebar onFriendSelect={setSelectedFriend} />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/search/:name"
+                    element={
+                      <PrivateRoute>
+                        <Search />
+                        <FriendListSidebar onFriendSelect={setSelectedFriend} />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <PrivateRoute>
+                        <Profile />
+                        <FriendListSidebar onFriendSelect={setSelectedFriend} />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/:userId"
+                    element={
+                      <PrivateRoute>
+                        <UserProfile />
+                        <FriendListSidebar onFriendSelect={setSelectedFriend} />
+                      </PrivateRoute>
+                    }
+                  />
+                </Route>
+              </Routes>
+              
+              <ChatPopup selectedFriend={selectedFriend} />
+            </AuthProvider>
           </div>
         </Router>
       </FilterProvider>

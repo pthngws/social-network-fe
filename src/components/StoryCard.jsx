@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { format, isValid } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
@@ -52,21 +53,27 @@ const StoryCard = ({ story, onView }) => {
 
       {/* User Info */}
       <div className="absolute top-2 left-2 right-2">
-        <div className="flex items-center">
+        <Link 
+          to={`/${story.userId}`}
+          className="flex items-center group-hover:bg-black/20 p-1 rounded-full transition-all"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent story view when clicking on user info
+          }}
+        >
           <img
             src={story.userAvatar || '/default-avatar.png'}
             alt={story.userName}
             className="w-8 h-8 rounded-full border-2 border-blue-500"
           />
           <div className="ml-2">
-            <p className="text-white text-sm font-medium truncate">
+            <p className="text-white text-sm font-medium truncate hover:text-blue-300 transition-colors">
               {story.userName || `User ${story.userId}`}
             </p>
             <p className="text-gray-200 text-xs">
               {formatTimeAgo(story.postedAt)}
             </p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Music Info if exists */}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { storyService } from '../services/storyService';
@@ -240,16 +241,32 @@ const StoryList = () => {
                 {/* User Info */}
                 <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent transform transition-all duration-300">
                   <div className="flex flex-col items-center">
-                    <img
-                      src={user.avatar}
-                      alt={user.fullName}
-                      className={`w-8 h-8 rounded-full border-2 ${
-                        allStoriesViewed ? 'border-gray-400' : 'border-blue-500'
-                      } transform transition-transform duration-300 group-hover:scale-110`}
-                    />
-                    <p className="text-white text-xs mt-1 font-medium truncate w-full text-center">
-                      {isCurrentUser ? 'Story của bạn' : user.fullName}
-                    </p>
+                    <Link 
+                      to={`/${userId}`}
+                      className="block"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Ngăn chặn việc mở story khi click vào avatar
+                      }}
+                    >
+                      <img
+                        src={user.avatar}
+                        alt={user.fullName}
+                        className={`w-8 h-8 rounded-full border-2 ${
+                          allStoriesViewed ? 'border-gray-400' : 'border-blue-500'
+                        } transform transition-transform duration-300 group-hover:scale-110`}
+                      />
+                    </Link>
+                    <Link 
+                      to={`/${userId}`}
+                      className="block w-full text-center"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Ngăn chặn việc mở story khi click vào tên
+                      }}
+                    >
+                      <p className="text-white text-xs mt-1 font-medium truncate hover:text-blue-300 transition-colors">
+                        {isCurrentUser ? 'Story của bạn' : user.fullName}
+                      </p>
+                    </Link>
                     <p className="text-gray-300 text-xs">
                       {formatTimeAgo(userStories[0].postedAt)}
                     </p>

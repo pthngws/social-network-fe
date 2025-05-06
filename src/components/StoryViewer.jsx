@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { storyService } from '../services/storyService';
 import { XMarkIcon, HeartIcon, EyeIcon, SpeakerWaveIcon, SpeakerXMarkIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { format, isValid, formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import StoryProgressBar from './StoryProgressBar';
 
-const IMAGE_DURATION = 60000; // 60 seconds for images
+const IMAGE_DURATION = 60000; // 60 giây cho hình ảnh
 
 const REACTION_TYPES = {
   LIKE: { icon: '/emojis/like.svg', label: 'Thích' },
@@ -36,40 +37,44 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
     return url?.toLowerCase().includes('.mp4') || url?.toLowerCase().includes('.webm');
   };
 
-  // Sort stories - keep original order
+  // Sắp xếp stories - giữ nguyên thứ tự gốc
   useEffect(() => {
     if (!allStories?.length) return;
     setSortedStories([...allStories]);
   }, [allStories]);
 
-  // Get current story's siblings (other stories from same user)
+  // Lấy các story của cùng một người dùng
   const getCurrentUserStories = () => {
     if (!currentStory) return [];
     return allStories.filter(story => story.userId === currentStory.userId);
   };
 
-  const startProgress = () => {
+  // Hàm bắt đầu thanh tiến trình
+  const startProgress = (useFallback = false) => {
     if (progressInterval.current) {
       clearInterval(progressInterval.current);
     }
 
-    // Determine duration based on music or content
+    // Xác định thời lượng
     let duration;
-    if (currentStory?.musicUrl && currentStory?.musicDuration) {
-      // Use musicDuration (in seconds) converted to milliseconds
+    if (useFallback || !currentStory?.musicUrl || !isAudioReady) {
+      // Sử dụng thời lượng dự phòng cho hình ảnh hoặc khi âm thanh chưa sẵn sàng
+      duration = IMAGE_DURATION;
+    } else if (currentStory?.musicUrl && currentStory?.musicDuration) {
+      // Sử dụng thời lượng nhạc
       duration = currentStory.musicDuration * 1000;
-    } else if (currentStory && isVideo(currentStory.content) && videoRef.current) {
-      // Use video duration for videos without music
+    } else if (isVideo(currentStory.content) && videoRef.current?.duration) {
+      // Sử dụng thời lượng video
       duration = videoRef.current.duration * 1000;
     } else {
-      // Fallback to IMAGE_DURATION for images without music
+      // Mặc định dự phòng
       duration = IMAGE_DURATION;
     }
 
     const increment = 100 / (duration / 100);
 
     progressInterval.current = setInterval(() => {
-      setProgress(prev => {
+      setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(progressInterval.current);
           onNext();
@@ -80,20 +85,20 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
     }, 100);
   };
 
-  // Load story data
+  // Tải dữ liệu story
   useEffect(() => {
     const loadStory = async () => {
       try {
         const story = sortedStories[currentIndex];
         if (!story) return;
 
-        console.log('Loading story:', story);
-        
-        // Check if current user is the story owner
+        console.log('Đang tải story:', story);
+
+        // Kiểm tra xem người dùng hiện tại có phải là chủ story
         const currentUserId = localStorage.getItem('userId');
         const isOwner = currentUserId === story.userId.toString();
         setIsStoryOwner(isOwner);
-        
+
         setCurrentStory(story);
         setProgress(0);
         setIsAudioReady(false);
@@ -109,7 +114,7 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
           }
         }
 
-        // Load interactions only if user is the story owner
+        // Tải tương tác nếu là chủ story
         if (isOwner) {
           const response = await storyService.getStoryInteractions(story.id);
           if (response.data.status === 200) {
@@ -117,15 +122,18 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
           }
         }
 
-        // Handle audio
+        // Bắt đầu thanh tiến trình ngay lập tức với thời lượng dự phòng
+        startProgress(true);
+
+        // Xử lý âm thanh
         if (audioRefs && audioRefs[story.id] && story.musicUrl) {
-          audioRef.current = audioRefs[story.id]; // Use preloaded audio
+          audioRef.current = audioRefs[story.id];
           audioRef.current.muted = isMuted;
 
-          // Wait for metadata to load (should be fast since preloaded)
+          // Chờ metadata âm thanh
           await new Promise((resolve, reject) => {
             if (audioRef.current.readyState >= 2) {
-              // Metadata already loaded
+              // Metadata đã được tải
               const audioDuration = audioRef.current.duration;
               const musicStart = Math.max(0, story.musicStart || 0);
               const musicDuration = Math.min(
@@ -134,6 +142,11 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
               );
               audioRef.current.currentTime = musicStart;
               setIsAudioReady(true);
+
+              // Khởi động lại thanh tiến trình với thời lượng chính xác
+              setProgress(0);
+              startProgress(false);
+
               resolve();
             } else {
               audioRef.current.onloadedmetadata = () => {
@@ -146,50 +159,52 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
                   );
                   audioRef.current.currentTime = musicStart;
                   setIsAudioReady(true);
+
+                  // Khởi động lại thanh tiến trình với thời lượng chính xác
+                  setProgress(0);
+                  startProgress(false);
+
                   resolve();
                 }
               };
               audioRef.current.onerror = () => {
-                console.error('Error loading audio metadata');
-                setIsAudioReady(true); // Proceed even if audio fails
+                console.error('Lỗi tải metadata âm thanh');
+                setIsAudioReady(true); // Tiếp tục ngay cả khi âm thanh lỗi
                 reject();
               };
             }
           });
 
-          // Play audio if not muted
+          // Phát âm thanh nếu không bị tắt tiếng
           if (!isMuted) {
             try {
               await audioRef.current.play();
-              console.log('Music started playing successfully at', story.musicStart, 'for', story.musicDuration, 'seconds');
+              console.log('Nhạc bắt đầu phát tại', story.musicStart, 'trong', story.musicDuration, 'giây');
             } catch (error) {
-              console.error('Music playback failed:', error);
+              console.error('Lỗi phát nhạc:', error);
             }
           }
 
-          // Stop audio when the segment ends
+          // Dừng âm thanh khi đoạn nhạc kết thúc
           const checkAudioTime = () => {
             if (audioRef.current && audioRef.current.currentTime >= story.musicStart + story.musicDuration) {
               audioRef.current.pause();
-              audioRef.current.currentTime = story.musicStart; // Reset to start
+              audioRef.current.currentTime = story.musicStart;
             }
           };
           audioRef.current.addEventListener('timeupdate', checkAudioTime);
 
-          // Cleanup timeupdate listener
+          // Dọn dẹp listener
           return () => {
             if (audioRef.current) {
               audioRef.current.removeEventListener('timeupdate', checkAudioTime);
             }
           };
         } else {
-          setIsAudioReady(true); // No audio, proceed immediately
+          setIsAudioReady(true); // Không có âm thanh, giữ thời lượng dự phòng
         }
-
-        // Start progress after everything is loaded
-        startProgress();
       } catch (error) {
-        console.error('Error loading story:', error);
+        console.error('Lỗi tải story:', error);
         setError('Không thể tải story. Vui lòng thử lại sau.');
       }
     };
@@ -206,7 +221,7 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
     };
   }, [currentIndex, sortedStories, isMuted, audioRefs]);
 
-  // Check for expired story
+  // Kiểm tra story hết hạn
   useEffect(() => {
     if (!currentStory) return;
 
@@ -216,14 +231,14 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
     }
   }, [currentStory, onNext]);
 
+  // Đồng bộ âm thanh với trạng thái tạm dừng/tiếp tục
   useEffect(() => {
-    // Sync audio with pause/resume
     if (audioRef.current && currentStory?.musicUrl) {
       if (isPaused) {
         audioRef.current.pause();
       } else if (!isMuted && isAudioReady) {
         audioRef.current.play().catch(error => {
-          console.error('Error resuming audio:', error);
+          console.error('Lỗi tiếp tục âm thanh:', error);
         });
       }
     }
@@ -244,7 +259,7 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
         }
       }
     } catch (error) {
-      console.error('Error reacting to story:', error);
+      console.error('Lỗi phản ứng story:', error);
     }
   };
 
@@ -261,7 +276,7 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
       }
       onNext();
     } catch (error) {
-      console.error('Error deleting story:', error);
+      console.error('Lỗi xóa story:', error);
       setError('Không thể xóa story. Vui lòng thử lại sau.');
     }
   };
@@ -281,15 +296,15 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
 
   const handleMouseUp = () => {
     setIsPaused(false);
-    startProgress();
+    startProgress(!isAudioReady); // Sử dụng thời lượng phù hợp
     if (videoRef.current) {
       videoRef.current.play().catch(error => {
-        console.error('Error resuming video:', error);
+        console.error('Lỗi tiếp tục video:', error);
       });
     }
     if (audioRef.current && !isMuted && isAudioReady) {
       audioRef.current.play().catch(error => {
-        console.error('Error resuming audio:', error);
+        console.error('Lỗi tiếp tục âm thanh:', error);
       });
     }
   };
@@ -328,21 +343,21 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
   if (!currentStory) return null;
 
   const currentIsVideo = isVideo(currentStory.content);
-  const shouldShowProgress = !currentStory.musicUrl || isAudioReady;
+  const shouldShowProgress = true; // Luôn hiển thị thanh tiến trình
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
-      {/* Close Button */}
+      {/* Nút đóng */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-full transition-colors"
+        className="absolute top-4 right-4 text-white p Stuart p-2 hover:bg-white/10 rounded-full transition-colors"
       >
         <XMarkIcon className="w-6 h-6" />
       </button>
 
-      {/* Story Container */}
+      {/* Container Story */}
       <div className="relative max-w-md w-full h-[80vh] bg-gray-900 rounded-xl overflow-hidden">
-        {/* Progress Bars */}
+        {/* Thanh tiến trình */}
         {currentStory && shouldShowProgress && (
           <StoryProgressBar
             stories={getCurrentUserStories()}
@@ -351,14 +366,14 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
           />
         )}
 
-        {/* Story Content */}
+        {/* Nội dung Story */}
         <div
           className="relative w-full h-full"
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          {/* Media Container with Overlay */}
+          {/* Container Media với Overlay */}
           <div className="relative w-full h-full">
             {/* Media */}
             {currentIsVideo ? (
@@ -378,15 +393,22 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
               />
             )}
 
-            {/* Media Overlays */}
+            {/* Overlay Media */}
             <div className="absolute inset-0 bg-black/10" />
             <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/40 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/40 to-transparent" />
           </div>
 
-          {/* User Info */}
+          {/* Thông tin người dùng */}
           <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20">
-            <div className="flex items-center bg-black/30 rounded-full p-2">
+            <Link 
+              to={`/${currentStory.userId}`}
+              className="flex items-center bg-black/30 rounded-full p-2 hover:bg-black/50 transition-all"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsPaused(true);
+              }}
+            >
               <img
                 src={currentStory.avatar}
                 alt={currentStory.fullName}
@@ -400,7 +422,7 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
                   {formatTimeAgo(currentStory.postedAt)}
                 </p>
               </div>
-            </div>
+            </Link>
             {isStoryOwner && (
               <button
                 onClick={handleDeleteStory}
@@ -411,13 +433,13 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
             )}
           </div>
 
-          {/* Music Player */}
+          {/* Trình phát nhạc */}
           {currentStory.musicUrl && (
             <>
               <div className="absolute bottom-20 left-4 right-4 flex items-center justify-between">
                 <div className="flex items-center bg-black/40 rounded-full px-4 py-2">
                   <span className="text-white mr-3">
-                    🎵 Playing music
+                    🎵 Đang phát nhạc
                   </span>
                   <button
                     onClick={toggleMute}
@@ -434,7 +456,7 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
             </>
           )}
 
-          {/* Reactions */}
+          {/* Phản ứng */}
           <div className="absolute bottom-4 left-4 right-4">
             {!isStoryOwner ? (
               <div className="flex items-center justify-center">
@@ -473,7 +495,7 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
             )}
           </div>
 
-          {/* Interactions Panel - Only visible for story owner */}
+          {/* Bảng tương tác - Chỉ hiển thị cho chủ story */}
           {showInteractions && isStoryOwner && (
             <div className="absolute left-4 bottom-16 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 max-h-80 overflow-y-auto">
               <h4 className="text-gray-900 dark:text-white font-medium mb-3">
@@ -481,9 +503,14 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
               </h4>
               <div className="space-y-2">
                 {interactions.map((interaction, index) => (
-                  <div
+                  <Link
                     key={index}
+                    to={`/${interaction.userId}`}
                     className="flex items-center py-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg px-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsPaused(true);
+                    }}
                   >
                     <img
                       src={interaction.avatar}
@@ -508,7 +535,7 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
                         {formatTimeAgo(interaction.interactedAt)}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -516,7 +543,7 @@ const StoryViewer = ({ stories: allStories, currentIndex, onClose, onNext, onPre
         </div>
       </div>
 
-      {/* Navigation Buttons */}
+      {/* Nút điều hướng */}
       <button
         onClick={onPrevious}
         className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-3 rounded-full hover:bg-black/60 transition-all transform hover:scale-110 z-20"

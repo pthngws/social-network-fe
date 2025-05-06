@@ -3,13 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeftEndOnRectangleIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { FaSignOutAlt } from "react-icons/fa";
 import { FaGear } from "react-icons/fa6";
-const UserMenuDropdown = ({ user, showUserMenu, setShowUserMenu }) => {
+
+const UserMenuDropdown = ({ user, showUserMenu, setShowUserMenu, onLogout }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef();
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      // Use onLogout from props if available
+      if (onLogout) {
+        await onLogout();
+      } else {
+        // Fallback to local handling if no onLogout prop
+        localStorage.clear();
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Fallback to local handling if onLogout fails
+      localStorage.clear();
+      navigate('/');
+    }
   };
 
   useEffect(() => {
@@ -60,7 +74,7 @@ const UserMenuDropdown = ({ user, showUserMenu, setShowUserMenu }) => {
           </div>
           <button
             className="flex items-center w-full text-left px-4 py-3 text-me  hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
-            // onClick={handleLogout}
+            onClick={() => navigate('/settings')}
           >
             <FaGear className="h-5 w-5 mr-2" />
             Cài đặt

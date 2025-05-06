@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { messageService } from '../services/messageService';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
-import { FaComments } from 'react-icons/fa';
+import { FaComments, FaSmile, FaPaperPlane } from 'react-icons/fa';
 import EmojiPicker from 'emoji-picker-react';
 
 const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
@@ -184,9 +184,9 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
       {isOpen && selectedFriend && (
         <div
           ref={chatPopupRef}
-          className="fixed bottom-5 right-24 w-80 h-[450px] bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-lg flex flex-col z-40"
+          className="fixed bottom-5 right-24 w-80 h-[450px] bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-lg flex flex-col z-40 border border-gray-200 dark:border-gray-700"
         >
-          <div className="flex justify-between items-center bg-blue-500 text-white p-4 rounded-t-lg">
+          <div className="flex justify-between items-center bg-gray-100 dark:bg-gray-900 p-4 rounded-t-lg border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center">
               {selectedFriend && (
                 <div className="relative mr-2">
@@ -203,13 +203,13 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
               )}
               <div className="flex flex-col">
                 <span
-                  className="font-semibold cursor-pointer"
+                  className="font-semibold cursor-pointer text-black dark:text-white"
                   onClick={() => selectedFriend && navigate(`/${selectedFriend.userID}`)}
                 >
                   {selectedFriend ? selectedFriend.name : 'Tin Nhắn'}
                 </span>
                 {selectedFriend && (
-                  <span className="text-xs text-blue-200 flex items-center gap-1">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                     {selectedFriend.isOnline && (
                       <span className="w-2 h-2 bg-green-400 rounded-full inline-block"></span>
                     )}
@@ -224,7 +224,7 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
                 setSelectedFriend(null);
                 setShowEmojiPicker(false);
               }}
-              className="hover:bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center"
+              className="hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400"
             >
               ×
             </button>
@@ -285,31 +285,31 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
           </div>
           <div className="p-4 border-t border-gray-200 dark:border-gray-700 relative">
             {showEmojiPicker && (
-              <div className="absolute bottom-16 left-4 z-50">
+              <div className="absolute bottom-16 right-4 z-50">
                 <EmojiPicker onEmojiClick={onEmojiClick} />
               </div>
             )}
-            <div className="flex items-center">
-              <button
-                ref={emojiButtonRef}
-                className="p-3 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
-                onClick={() => setShowEmojiPicker((prev) => !prev)}
-              >
-                😊
-              </button>
+            <div className="flex items-center rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-1">
               <input
                 type="text"
                 placeholder="Soạn tin nhắn"
-                className="flex-1 p-3 rounded-l-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-2 rounded-full bg-transparent text-black dark:text-white focus:outline-none"
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
               <button
-                className="bg-blue-500 text-white p-3 rounded-r-full hover:bg-blue-600 transition-colors duration-200"
+                ref={emojiButtonRef}
+                className="p-2 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                onClick={() => setShowEmojiPicker((prev) => !prev)}
+              >
+                <FaSmile className="w-5 h-5" />
+              </button>
+              <button
+                className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors duration-200 ml-1"
                 onClick={sendMessage}
               >
-                ➤
+                <FaPaperPlane className="w-4 h-4" />
               </button>
             </div>
           </div>

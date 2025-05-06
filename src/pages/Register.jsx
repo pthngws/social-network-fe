@@ -12,6 +12,7 @@ const Register = () => {
   const [alert, setAlert] = useState({ show: false, type: "", message: "" });
   const [otp, setOtp] = useState("");
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -20,19 +21,23 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
     const { email, password, confirmPassword } = formData;
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setAlert({ show: true, type: "error", message: "Định dạng email không hợp lệ." });
+      setIsLoading(false);
       return;
     }
     if (password.length < 6) {
       setAlert({ show: true, type: "error", message: "Mật khẩu phải dài ít nhất 6 ký tự." });
+      setIsLoading(false);
       return;
     }
     if (password !== confirmPassword) {
       setAlert({ show: true, type: "error", message: "Mật khẩu không khớp." });
+      setIsLoading(false);
       return;
     }
 
@@ -59,23 +64,26 @@ const Register = () => {
         type: "error",
         message: error.response?.data?.message || "Đăng ký thất bại, vui lòng thử lại."
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleVerifyOtp = async () => {
+    setIsLoading(true);
     try {
       const response = await verifyOtp(formData.email, otp);
       if (response.data.status === 200) {
         setAlert({ show: true, type: "success", message: "Xác thực OTP thành công! Đang chuyển hướng..." });
-        setTimeout(() => {
-          navigate("/login");
-        }, 1500);
+        navigate("/login");
       } else {
         setAlert({ show: true, type: "error", message: response.data.message || "Mã OTP không hợp lệ." });
       }
     } catch (error) {
       console.error("Error:", error);
       setAlert({ show: true, type: "error", message: error.response?.data?.message || "Xác thực OTP thất bại." });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -104,6 +112,7 @@ const Register = () => {
               placeholder="Nhập email"
               value={formData.email}
               onChange={handleChange}
+              disabled={isLoading}
               required
             />
           </div>
@@ -117,6 +126,7 @@ const Register = () => {
               placeholder="Nhập mật khẩu"
               value={formData.password}
               onChange={handleChange}
+              disabled={isLoading}
               required
             />
           </div>
@@ -130,10 +140,17 @@ const Register = () => {
               placeholder="Nhập lại mật khẩu"
               value={formData.confirmPassword}
               onChange={handleChange}
+              disabled={isLoading}
               required
             />
           </div>
-          <Button type="submit" variant="primary" className="w-full">
+          <Button 
+            type="submit" 
+            variant="primary" 
+            className="w-full"
+            isLoading={isLoading}
+            disabled={isLoading}
+          >
             Đăng ký
           </Button>
         </form>
@@ -156,8 +173,15 @@ const Register = () => {
               placeholder="Nhập mã OTP"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
+              disabled={isLoading}
             />
-            <Button variant="primary" className="w-full" onClick={handleVerifyOtp}>
+            <Button 
+              variant="primary" 
+              className="w-full" 
+              onClick={handleVerifyOtp}
+              isLoading={isLoading}
+              disabled={isLoading}
+            >
               Xác thực OTP
             </Button>
           </div>

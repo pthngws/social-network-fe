@@ -1,37 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
-import ChatPopup from "../components/ChatPopup";
+import { useAuthContext } from "../contexts/AuthContext";
 
 const MainLayout = ({ selectedFriend, setSelectedFriend }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, isAuthenticated, logout } = useAuthContext();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("No token found in localStorage");
+    if (!isAuthenticated) {
       navigate("/login");
-      return;
     }
+  }, [isAuthenticated, navigate]);
 
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Lỗi phân tích user từ localStorage:", error);
-        setUser(null);
-      }
+  const handleLogout = async () => {
+    // Show loading or disable UI if needed
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Handle error if needed
     }
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/");
   };
 
   return (
@@ -45,7 +34,6 @@ const MainLayout = ({ selectedFriend, setSelectedFriend }) => {
       <main className="mt-5 flex-grow">
         <Outlet />
       </main>
-      <ChatPopup selectedFriend={selectedFriend} />
     </div>
   );
 };

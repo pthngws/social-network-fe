@@ -6,6 +6,7 @@ import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
 import { login } from '../services/authService';
 import validateLoginInputs from '../components/validateInputs';
+import { useAuthContext } from '../contexts/AuthContext';
 
 const BACKEND_URL = 'http://localhost:8080'; // Port của backend
 
@@ -16,6 +17,7 @@ const Login = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { refreshAuth } = useAuthContext();
 
   // Handle OAuth2 callback for Google login
   useEffect(() => {
@@ -54,7 +56,10 @@ const Login = () => {
                 type: 'success',
                 message: 'Đăng nhập Google thành công! Đang chuyển hướng...',
               });
-              setTimeout(() => navigate('/home'), 1500);
+              
+              // Immediately refresh auth state and navigate
+              await refreshAuth();
+              navigate('/home');
             } else {
               console.error('Missing fields in UserDto:', data.data);
               setAlert({
@@ -82,7 +87,7 @@ const Login = () => {
     };
 
     handleOAuthCallback();
-  }, [location, navigate]);
+  }, [location, navigate, refreshAuth]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value.trim() });
@@ -106,17 +111,30 @@ const Login = () => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('email', data.email);
         localStorage.setItem('userId', data.id); // Điều chỉnh nếu là userId
+        
+        if (data.refreshToken) {
+          localStorage.setItem('refreshToken', data.refreshToken);
+        }
+        
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+        
         console.log('Stored in localStorage:', {
           token: data.token,
           email: data.email,
           userId: data.id,
         });
+        
         setAlert({
           show: true,
           type: 'success',
           message: 'Đăng nhập thành công! Đang chuyển hướng...',
         });
-        setTimeout(() => navigate('/home'), 1500);
+        
+        // Refresh auth state and navigate immediately
+        await refreshAuth();
+        navigate('/home');
       } else {
         throw new Error('Dữ liệu đăng nhập không đầy đủ');
       }
