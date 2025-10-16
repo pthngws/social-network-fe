@@ -14,7 +14,6 @@ export default defineConfig({
     sourcemap: false,
     minify: 'terser',
     rollupOptions: {
-      external: ['net'], // Externalize net module for browser compatibility
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
