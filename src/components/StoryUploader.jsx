@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { storyService } from '../services/storyService';
-import Card from './ui/Card';
-import Input from './ui/Input';
-import Button from './ui/Button';
-import Alert from './ui/Alert';
+import Card from './UI/Card';
+import Input from './UI/Input';
+import Button from './UI/Button';
+import Alert from './UI/Alert';
 import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { useApiLoading } from '../hooks/useApiLoading';
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FaUserGroup } from "react-icons/fa6";
 import { friendshipService } from '../services/friendshipService';
-import Alert from './ui/Alert';      
+import Alert from './UI/Alert';      
 
 const FriendRequestsDropdown = ({ friendRequests, setFriendRequests, showFriendMenu, setShowFriendMenu }) => {
   const dropdownRef = useRef();

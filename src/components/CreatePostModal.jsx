@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Input from './ui/Input';
-import Button from './ui/Button';
-import Alert from './ui/Alert';
+import Input from './UI/Input';
+import Button from './UI/Button';
+import Alert from './UI/Alert';
 import { PhotoIcon, SparklesIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { postService } from '../services/postService';
 import { useApiLoading } from '../hooks/useApiLoading';

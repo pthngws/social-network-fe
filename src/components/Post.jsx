@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { postService } from '../services/postService';
-import Modal from './ui/Modal';
-import Card from './ui/Card';
-import Input from './ui/Input';
-import Button from './ui/Button';
-import Alert from './ui/Alert';
+import Modal from './UI/Modal';
+import Card from './UI/Card';
+import Input from './UI/Input';
+import Button from './UI/Button';
+import Alert from './UI/Alert';
 import CreatePostModal from './CreatePostModal';
 import MediaPreviewModal from './MediaPreviewModal';
 import { useApiLoading } from '../hooks/useApiLoading';
@@ -48,7 +48,7 @@ const Post = ({ post }) => {
 
   const reactionLabels = {
     LIKE: 'Thích',
-    LOVE: 'Yêu thích', 
+    LOVE: 'Yêu thích',
     CARE: 'Thương thương',
     HAHA: 'Haha',
     WOW: 'Wow',
@@ -501,7 +501,7 @@ const Post = ({ post }) => {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
-                {['LIKE', 'LOVE','CARE', 'HAHA', 'WOW', 'SAD', 'ANGRY'].map((type) => (
+                {['LIKE', 'LOVE', 'CARE', 'HAHA', 'WOW', 'SAD', 'ANGRY'].map((type) => (
                   <div
                     key={type}
                     className="relative cursor-pointer"

@@ -6,7 +6,7 @@ import { storyService } from '../services/storyService';
 import StoryViewer from './StoryViewer';
 import CreateStoryModal from './CreateStoryModal';
 import { PlusIcon } from '@heroicons/react/24/solid';
-import Card from './ui/Card';
+import Card from './UI/Card';
 
 const StoryList = () => {
   const [stories, setStories] = useState([]);

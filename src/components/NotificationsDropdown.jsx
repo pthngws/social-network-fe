@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { FaBell } from 'react-icons/fa';
 import { connectWebSocket, disconnectWebSocket } from '../services/websocketService';
 import { notifyService } from '../services/notifyService';
-import Alert from './ui/Alert';
+import Alert from './UI/Alert';
 
 const NotificationsDropdown = ({ showNotifyMenu, setShowNotifyMenu }) => {
   const dropdownRef = useRef();

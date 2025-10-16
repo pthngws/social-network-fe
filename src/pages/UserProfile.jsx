@@ -63,9 +63,8 @@ const UserProfile = () => {
             setAlert({
               show: true,
               type: 'success',
-              message: `Thành công: ${
-                action === 'send' ? 'Gửi yêu cầu kết bạn' : action === 'accept' ? 'Chấp nhận kết bạn' : 'Hủy kết bạn'
-              }`,
+              message: `Thành công: ${action === 'send' ? 'Gửi yêu cầu kết bạn' : action === 'accept' ? 'Chấp nhận kết bạn' : 'Hủy kết bạn'
+                }`,
             });
             setTimeout(() => setAlert({ show: false, type: '', message: '' }), 3000);
           }
@@ -110,29 +109,29 @@ const UserProfile = () => {
   const getButtonProps = (friendStatus) => {
     switch (friendStatus) {
       case 'PENDING':
-        return { 
-          text: 'Hủy yêu cầu', 
+        return {
+          text: 'Hủy yêu cầu',
           action: () => handleFriendAction('cancel'),
           icon: <FaUserTimes />,
           bgColor: 'bg-red-500 hover:bg-red-600'
         };
       case 'ACCEPTED':
-        return { 
-          text: 'Bạn bè', 
+        return {
+          text: 'Bạn bè',
           action: () => handleFriendAction('cancel'),
           icon: <FaUserCheck />,
           bgColor: 'bg-gray-500 hover:bg-gray-600'
         };
       case 'SENT_BY_OTHER':
-        return { 
-          text: 'Chấp nhận', 
+        return {
+          text: 'Chấp nhận',
           action: () => handleFriendAction('accept'),
           icon: <FaUserCheck />,
           bgColor: 'bg-blue-500 hover:bg-blue-600'
         };
       default:
-        return { 
-          text: 'Kết bạn', 
+        return {
+          text: 'Kết bạn',
           action: () => handleFriendAction('send'),
           icon: <FaUserPlus />,
           bgColor: 'bg-blue-500 hover:bg-blue-600'
@@ -188,11 +187,10 @@ const UserProfile = () => {
         <ul className="flex border-b mb-4 dark:border-gray-700">
           <li>
             <button
-              className={`pb-2 px-4 ${
-                activeTab === 'timeline'
+              className={`pb-2 px-4 ${activeTab === 'timeline'
                   ? 'border-b-2 border-blue-500 font-bold text-blue-500'
                   : 'text-gray-500 dark:text-gray-400'
-              }`}
+                }`}
               onClick={() => setActiveTab('timeline')}
             >
               Bài viết
@@ -200,11 +198,10 @@ const UserProfile = () => {
           </li>
           <li>
             <button
-              className={`pb-2 px-4 ${
-                activeTab === 'info'
+              className={`pb-2 px-4 ${activeTab === 'info'
                   ? 'border-b-2 border-blue-500 font-bold text-blue-500'
                   : 'text-gray-500 dark:text-gray-400'
-              }`}
+                }`}
               onClick={() => setActiveTab('info')}
             >
               Thông tin cá nhân
