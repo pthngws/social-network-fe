@@ -17,7 +17,7 @@ const Login = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { refreshAuth } = useAuthContext();
+  const { setJustLoggedIn } = useAuthContext();
 
   // Handle OAuth2 callback for Google login
   useEffect(() => {
@@ -57,8 +57,8 @@ const Login = () => {
                 message: 'Đăng nhập Google thành công! Đang chuyển hướng...',
               });
               
-              // Immediately refresh auth state and navigate
-              await refreshAuth();
+              // Set flag to avoid unnecessary API calls
+              setJustLoggedIn();
               navigate('/home');
             } else {
               console.error('Missing fields in UserDto:', data.data);
@@ -132,8 +132,8 @@ const Login = () => {
           message: 'Đăng nhập thành công! Đang chuyển hướng...',
         });
         
-        // Refresh auth state and navigate immediately
-        await refreshAuth();
+        // Set flag to avoid unnecessary API calls
+        setJustLoggedIn();
         navigate('/home');
       } else {
         throw new Error('Dữ liệu đăng nhập không đầy đủ');

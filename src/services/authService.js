@@ -1,7 +1,7 @@
 import api from './api';
 
 export const login = (data) => api.post('/auth/login', data);
-export const register = (data) => api.post('/auth/register', data);
+export const register = (data) => api.post('/auth/signup', data);
 export const verifyEmail = (email, otp) => api.post('/auth/verify-email', { email, otp });
 export const resendOtp = (email) => api.post('/auth/resend-otp', { email });
 export const forgotPassword = (email) => api.post('/auth/forgot-password', { email });
@@ -12,4 +12,3 @@ export const revokeToken = () => api.post('/auth/revoke-token');
 export const verifyToken = () => api.get('/auth/verify');
 export const oauth2Login = () => api.get('/auth/oauth2-login', { withCredentials: true });
 export const verifyOtp = (email, otp) => api.post('/auth/verify-otp', null, { params: { email, otp } });
-  
