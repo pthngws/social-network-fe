@@ -37,7 +37,7 @@ const Home = () => {
   }, [hasMore, loading, fetchPosts]);
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 px-4 py-8 mt-10">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 px-2 sm:px-4 py-4 sm:py-8 mt-10">
       <div className="max-w-2xl mx-auto">
         {/* Stories Section */}
         <StoryList />

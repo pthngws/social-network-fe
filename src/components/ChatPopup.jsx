@@ -184,7 +184,7 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
       {isOpen && selectedFriend && (
         <div
           ref={chatPopupRef}
-          className="fixed bottom-5 right-24 w-80 h-[450px] bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-lg flex flex-col z-40 border border-gray-200 dark:border-gray-700"
+          className="fixed bottom-5 right-4 lg:right-24 w-[calc(100vw-2rem)] sm:w-80 h-[450px] bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-lg flex flex-col z-40 border border-gray-200 dark:border-gray-700"
         >
           <div className="flex justify-between items-center bg-gray-100 dark:bg-gray-900 p-4 rounded-t-lg border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center">

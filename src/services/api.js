@@ -11,7 +11,7 @@ const axiosRefresh = axios.create({
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
-  timeout: 10000, // 10 second timeout
+  timeout: 30000, // 30 second timeout
 });
 
 // Gắn access token vào header

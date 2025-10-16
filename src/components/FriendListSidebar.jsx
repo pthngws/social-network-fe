@@ -75,7 +75,7 @@ const FriendListSidebar = ({ onFriendSelect }) => {
   };
 
   return (
-    <div className="fixed top-20 right-0 w-64 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 flex flex-col z-10">
+    <div className="hidden lg:flex fixed top-20 right-0 w-64 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 flex-col z-10">
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
         <h2 className="text-md font-semibold text-gray-700 dark:text-gray-300">Danh sách bạn</h2>
       </div>

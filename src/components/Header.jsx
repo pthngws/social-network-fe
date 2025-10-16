@@ -129,10 +129,10 @@ const Header = ({ selectedFriend, setSelectedFriend, user: propUser, onLogout })
   }, [userEmail]);
 
   return (
-    <nav className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-4 fixed w-full top-0 z-50 shadow-md">
+    <nav className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-2 sm:p-4 fixed w-full top-0 z-50 shadow-md">
       <div className="container mx-auto flex items-center justify-between">
         <MemoizedLogoAndSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-        <div className="flex items-center space-x-8">
+        <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-8">
           <Link
             to="/home"
             className={`relative flex items-center justify-center w-10 h-10 rounded-full group ${

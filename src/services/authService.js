@@ -2,7 +2,6 @@ import api from './api';
 
 export const login = (data) => api.post('/auth/login', data);
 export const register = (data) => api.post('/auth/signup', data);
-export const verifyEmail = (email, otp) => api.post('/auth/verify-email', { email, otp });
 export const resendOtp = (email) => api.post('/auth/resend-otp', { email });
 export const forgotPassword = (email) => api.post('/auth/forgot-password', { email });
 export const verifyResetOtp = (email, otp) => api.post('/auth/verify-reset-otp', { email, otp });

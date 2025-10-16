@@ -66,7 +66,7 @@ const LogoAndSearch = ({ searchQuery, setSearchQuery }) => {
   };
 
   return (
-    <div className="flex items-center space-x-4">
+    <div className="flex items-center space-x-2 sm:space-x-4">
       {/* <a href="/home">
         <img src="/logo-white.png" alt="Logo" className=" w-10 h-10" />
       </a> */}
@@ -75,7 +75,7 @@ const LogoAndSearch = ({ searchQuery, setSearchQuery }) => {
         <input
           type="text"
           placeholder="Tìm kiếm"
-          className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-full pl-10 pr-4 py-2 focus:outline-none w-80"
+          className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-full pl-10 pr-4 py-2 focus:outline-none w-48 sm:w-64 lg:w-80"
           value={searchQuery}
           onChange={handleInputChange}
           onClick={handleInputClick} // Thêm sự kiện click để toggle dropdown
