@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaComments } from 'react-icons/fa';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
+import { WS_BASE_URL } from '../services/config';
 
 const ChatListDropdown = ({ showChatMenu, setShowChatMenu, onFriendSelect, friends, refreshFriendList }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,7 +18,7 @@ const ChatListDropdown = ({ showChatMenu, setShowChatMenu, onFriendSelect, frien
 
     const connectWebSocket = () => {
       console.log(`Attempting WebSocket connection (Attempt ${retryCount + 1}/${maxRetries})`);
-      const socket = new SockJS('/ws');
+      const socket = new SockJS(`${WS_BASE_URL.replace(/\/$/, '')}/ws`);
       const client = Stomp.over(socket);
       stompClientRef.current = client;
 

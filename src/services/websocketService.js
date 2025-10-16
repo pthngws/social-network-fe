@@ -1,5 +1,6 @@
 import SockJS from 'sockjs-client';
 import { over } from 'stompjs';
+import { WS_BASE_URL } from './config';
 
 let stompClient = null;
 
@@ -9,7 +10,7 @@ export const connectWebSocket = (userEmail, onMessageReceived) => {
     return;
   }
 
-  const socket = new SockJS('/ws');
+  const socket = new SockJS(`${WS_BASE_URL.replace(/\/$/, '')}/ws`);
   stompClient = over(socket);
 
   stompClient.connect(

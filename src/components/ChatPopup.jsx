@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { messageService } from '../services/messageService';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
+import { WS_BASE_URL } from '../services/config';
 import { FaComments, FaSmile, FaPaperPlane } from 'react-icons/fa';
 import EmojiPicker from 'emoji-picker-react';
 
@@ -80,7 +81,7 @@ const ChatPopup = ({ selectedFriend: propSelectedFriend }) => {
 
   const connectWebSocket = () => {
     console.log('Connecting WebSocket in ChatPopup');
-    const socket = new SockJS('/ws');
+    const socket = new SockJS(`${WS_BASE_URL.replace(/\/$/, '')}/ws`);
     const client = Stomp.over(socket);
     client.connect({}, () => {
       console.log('WebSocket connected in ChatPopup');
