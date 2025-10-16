@@ -147,7 +147,7 @@ const Login = () => {
           Đăng nhập
         </h2>
         <p className="-mt-4 mb-4 text-xs text-center text-gray-500 dark:text-gray-400">
-          Tài khoản test: <span className="font-medium">test@gmail.com</span> / <span className="font-medium">123123</span>
+          Tài khoản/Mật khẩu test: <span className="font-medium">test@gmail.com</span> / <span className="font-medium">123123</span>
         </p>
         {alert.show && (
           <Alert
