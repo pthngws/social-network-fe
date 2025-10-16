@@ -1,5 +1,4 @@
-// src/pages/Home.js
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import useProfile from '../hooks/useProfile';
 import usePosts from '../hooks/usePosts';
 import CreatePostModal from '../components/CreatePostModal';
@@ -10,8 +9,32 @@ import StoryList from '../components/StoryList';
 
 const Home = () => {
   const { user } = useProfile();
-  const { posts, fetchPosts } = usePosts();
+  const { posts, fetchPosts, hasMore, loading } = usePosts();
   const [showModal, setShowModal] = useState(false);
+  const observerRef = useRef(); // 🔥 Ref cho IntersectionObserver
+  const lastPostRef = useRef(); // 🔥 Ref cho phần tử cuối cùng
+
+  // 🔥 Infinite Scroll logic
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          fetchPosts(); // Gọi fetchPosts khi cuộn đến cuối
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (lastPostRef.current) {
+      observer.observe(lastPostRef.current);
+    }
+
+    return () => {
+      if (lastPostRef.current) {
+        observer.unobserve(lastPostRef.current);
+      }
+    };
+  }, [hasMore, loading, fetchPosts]);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 px-4 py-8 mt-10">
@@ -38,12 +61,21 @@ const Home = () => {
 
         {/* Posts List */}
         {posts.length > 0 ? (
-          posts.map(post => <Post key={post.id} post={post} />)
+          posts.map((post, index) => (
+            <div
+              key={post.id}
+              ref={index === posts.length - 1 ? lastPostRef : null} // 🔥 Gắn ref vào bài viết cuối
+            >
+              <Post post={post} />
+            </div>
+          ))
         ) : (
           <p className="text-center text-gray-500 dark:text-gray-400">
             Chưa có bài viết nào
           </p>
         )}
+
+        {loading && <p className="text-center">Đang tải...</p>}
 
         <CreatePostModal
           isOpen={showModal}

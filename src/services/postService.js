@@ -8,7 +8,7 @@ export const postService = {
   getMyPosts: () => api.get('/myposts'),
 
   // Get all posts
-  getAllPosts: () => api.get('/posts'),
+  getAllPosts: (page, size) => api.get(`/posts?page=${page}&size=${size}`),
 
   // Create a new post
   createPost: (content, mediaFiles) => {

@@ -5,6 +5,7 @@ import PrivateRoute from "./routes/PrivateRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
+import Task from "./pages/Task";
 import Search from "./components/Search";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
@@ -88,6 +89,15 @@ function App() {
                     element={
                       <PrivateRoute>
                         <Home />
+                        <FriendListSidebar onFriendSelect={setSelectedFriend} />
+                      </PrivateRoute>
+                    }
+                  />
+                   <Route
+                    path="/tasks"
+                    element={
+                      <PrivateRoute>
+                        <Task />
                         <FriendListSidebar onFriendSelect={setSelectedFriend} />
                       </PrivateRoute>
                     }

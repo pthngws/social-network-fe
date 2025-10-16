@@ -10,7 +10,7 @@ import FriendRequestsDropdown from './FriendRequestsDropdown';
 import NotificationsDropdown from './NotificationsDropdown';
 import UserMenuDropdown from './UserMenuDropdown';
 import ChatListDropdown from './ChatListDropdown';
-import { FaHome } from 'react-icons/fa';
+import { FaHome, FaCalendarAlt  } from 'react-icons/fa';
 
 // Memoize child components
 const MemoizedLogoAndSearch = memo(LogoAndSearch);
@@ -143,6 +143,19 @@ const Header = ({ selectedFriend, setSelectedFriend, user: propUser, onLogout })
             <FaHome
               className="relative h-6 w-6 text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-200"
               title="Trang chủ"
+            />
+          </Link>
+
+           <Link
+            to="/tasks"
+            className={`relative flex items-center justify-center w-10 h-10 rounded-full group ${
+              location.pathname === '/tasks' ? 'text-blue-500' : ''
+            }`}
+          >
+            <span className="absolute w-16 h-16 rounded-full bg-gray-500 dark:bg-gray-400 opacity-0 group-hover:opacity-20 transition-all duration-300"></span>
+            <FaCalendarAlt 
+              className="relative h-6 w-6 text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-200"
+              title="Lịch"
             />
           </Link>
           <MemoizedFriendRequestsDropdown
