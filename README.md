@@ -91,9 +91,16 @@ src/
 Create a `.env` file in the root directory:
 
 ```env
-VITE_API_URL=your_api_url
-VITE_WS_URL=your_websocket_url
+# API Configuration
+VITE_API_URL=http://localhost:8080/api
+VITE_WS_URL=http://localhost:8080/ws
+
+# For production, replace with your actual API URLs:
+# VITE_API_URL=https://your-api-domain.com/api
+# VITE_WS_URL=https://your-api-domain.com/ws
 ```
+
+**Note**: Environment variables must start with `VITE_` to be accessible in the browser.
 
 ## Scripts
 
@@ -130,3 +137,10 @@ If you encounter build issues:
 - Check that build command is `npm run build`
 - Verify output directory is `dist`
 - Check Node.js version compatibility
+- If you get "Function Runtimes must have a valid version" error:
+  - Remove unnecessary `functions` configuration from `vercel.json`
+  - For React apps, only keep `rewrites` configuration
+- If build fails with "terser not found":
+  - Run `npm install --save-dev terser`
+- If you get module externalization warnings:
+  - These are usually safe to ignore for browser-only modules
