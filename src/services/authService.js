@@ -10,5 +10,4 @@ export const resetPassword = (email, otp, newPassword) => api.post('/auth/reset-
 export const refreshToken = () => api.post('/auth/refresh-token');
 export const revokeToken = () => api.post('/auth/revoke-token');
 export const verifyToken = () => api.get('/auth/verify');
-export const oauth2Login = () => api.get('/auth/oauth2-login', { withCredentials: true });
 export const verifyOtp = (email, otp) => api.post('/auth/verify-otp', null, { params: { email, otp } });

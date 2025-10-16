@@ -17,7 +17,7 @@ const Login = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { setJustLoggedIn } = useAuthContext();
+  const { refreshAuth } = useAuthContext();
 
   // Handle OAuth2 callback for Google login
   useEffect(() => {
@@ -35,48 +35,34 @@ const Login = () => {
 
       if (location.pathname === '/login' && oauth2Success === 'success') {
         try {
-          console.log('Fetching OAuth token from', `${BACKEND_URL}/auth/oauth2-login`);
-          const response = await fetch(`${BACKEND_URL}/auth/oauth2-login`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-          });
-          const data = await response.json();
-          console.log('OAuth Response:', data);
+          // Extract token from URL parameters (sent by OAuth2 success handler)
+          const token = urlParams.get('token');
+          console.log('OAuth2 token from URL:', token);
 
-          if (data.status === 200 && data.data) {
-            const { token, email, id } = data.data; // Điều chỉnh nếu id là userId
-            if (token && email && id) {
-              localStorage.setItem('token', token);
-              localStorage.setItem('email', email);
-              localStorage.setItem('userId', id);
-              console.log('Stored in localStorage:', { token, email, userId: id });
-              setAlert({
-                show: true,
-                type: 'success',
-                message: 'Đăng nhập Google thành công! Đang chuyển hướng...',
-              });
-              
-              // Set flag to avoid unnecessary API calls
-              setJustLoggedIn();
-              navigate('/home');
-            } else {
-              console.error('Missing fields in UserDto:', data.data);
-              setAlert({
-                show: true,
-                type: 'error',
-                message: 'Dữ liệu đăng nhập Google không đầy đủ.',
-              });
-            }
+          if (token) {
+            // Store token in localStorage
+            localStorage.setItem('token', token);
+            console.log('Stored OAuth2 token in localStorage:', token);
+            
+            setAlert({
+              show: true,
+              type: 'success',
+              message: 'Đăng nhập Google thành công! Đang chuyển hướng...',
+            });
+            
+            // Immediately refresh auth state and navigate
+            await refreshAuth();
+            navigate('/home');
           } else {
+            console.error('No token found in OAuth2 redirect URL');
             setAlert({
               show: true,
               type: 'error',
-              message: data.message || 'Không thể lấy thông tin đăng nhập Google.',
+              message: 'Không thể lấy token từ OAuth2 redirect.',
             });
           }
         } catch (error) {
-          console.error('Lỗi khi gọi API OAuth:', error);
+          console.error('Lỗi khi xử lý OAuth2 redirect:', error);
           setAlert({
             show: true,
             type: 'error',
@@ -132,8 +118,8 @@ const Login = () => {
           message: 'Đăng nhập thành công! Đang chuyển hướng...',
         });
         
-        // Set flag to avoid unnecessary API calls
-        setJustLoggedIn();
+        // Refresh auth state and navigate immediately
+        await refreshAuth();
         navigate('/home');
       } else {
         throw new Error('Dữ liệu đăng nhập không đầy đủ');

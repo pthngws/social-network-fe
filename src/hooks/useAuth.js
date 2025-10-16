@@ -8,7 +8,6 @@ const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [loginAttempted, setLoginAttempted] = useState(false);
-  const [justLoggedIn, setJustLoggedIn] = useState(false);
   const navigate = useNavigate();
 
   const checkTokenValidity = useCallback(async () => {
@@ -19,22 +18,6 @@ const useAuth = () => {
       handleAuthFailure();
       setLoginAttempted(true);
       return false;
-    }
-
-    // If we just logged in, skip verification to avoid unnecessary API calls
-    if (justLoggedIn) {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        try {
-          setUser(JSON.parse(userData));
-        } catch (e) {
-          console.error('Failed to parse user data', e);
-        }
-      }
-      setIsAuthenticated(true);
-      setLoginAttempted(true);
-      setJustLoggedIn(false);
-      return true;
     }
 
     try {
@@ -63,7 +46,7 @@ const useAuth = () => {
       // Error occurred, try refresh
       return await refreshAuthToken();
     }
-  }, [justLoggedIn]);
+  }, []);
 
   const refreshAuthToken = async () => {
     try {
@@ -155,18 +138,13 @@ const useAuth = () => {
     checkAuthentication();
   }, [checkTokenValidity]);
 
-  const setJustLoggedInFlag = useCallback(() => {
-    setJustLoggedIn(true);
-  }, []);
-
   return {
     isAuthenticated,
     isLoading,
     loginAttempted,
     user,
     logout,
-    refreshAuth: refreshAuthToken,
-    setJustLoggedIn: setJustLoggedInFlag
+    refreshAuth: refreshAuthToken
   };
 };
 
