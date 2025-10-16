@@ -91,16 +91,16 @@ src/
 Create a `.env` file in the root directory:
 
 ```env
-# API Configuration
-VITE_API_URL=http://localhost:8080/api
-VITE_WS_URL=http://localhost:8080/ws
+# Backend API Configuration
+VITE_API_BASE_URL=https://wsproject-5eb9.onrender.com/
 
-# For production, replace with your actual API URLs:
-# VITE_API_URL=https://your-api-domain.com/api
-# VITE_WS_URL=https://your-api-domain.com/ws
+# For local development, you can override with:
+# VITE_API_BASE_URL=http://localhost:8080/
 ```
 
 **Note**: Environment variables must start with `VITE_` to be accessible in the browser.
+
+**Current Backend**: The application is configured to use `https://wsproject-5eb9.onrender.com/` as the default backend URL.
 
 ## Scripts
 

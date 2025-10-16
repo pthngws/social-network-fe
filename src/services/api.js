@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://wsproject-5eb9.onrender.com/";
 
 // Create a separate axios instance for refresh token to avoid interceptor loops
 const axiosRefresh = axios.create({

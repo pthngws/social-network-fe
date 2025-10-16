@@ -8,7 +8,7 @@ import { login } from '../services/authService';
 import validateLoginInputs from '../components/validateInputs';
 import { useAuthContext } from '../contexts/AuthContext';
 
-const BACKEND_URL = 'http://localhost:8080'; // Port của backend
+const BACKEND_URL = 'https://wsproject-5eb9.onrender.com'; // Backend URL
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
