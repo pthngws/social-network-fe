@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import useProfile from '../hooks/useProfile';
 import usePosts from '../hooks/usePosts';
 import CreatePostModal from '../components/CreatePostModal';
-import Card from '../components/ui/Card';
-import Input from '../components/ui/Input';
+import Card from '../components/UI/Card';
+import Input from '../components/UI/Input';
 import Post from '../components/Post';
 import StoryList from '../components/StoryList';
 

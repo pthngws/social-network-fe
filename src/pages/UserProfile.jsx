@@ -5,7 +5,7 @@ import { postService } from '../services/postService';
 import { friendshipService } from '../services/friendshipService';
 import { onlineStatusService } from '../services/onlineStatusService';
 import Post from '../components/Post';
-import Alert from '../components/ui/Alert';
+import Alert from '../components/UI/Alert';
 import ChatPopup from '../components/ChatPopup';
 import FriendListSidebar from '../components/FriendListSidebar';
 import { FaUserFriends, FaComments, FaUserPlus, FaUserCheck, FaUserTimes, FaUserClock } from 'react-icons/fa';

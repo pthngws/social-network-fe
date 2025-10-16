@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate, Link } from 'react-router-dom';
-import Card from '../components/ui/Card';
-import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
-import Alert from '../components/ui/Alert';
+import Card from '../components/UI/Card';
+import Input from '../components/UI/Input';
+import Button from '../components/UI/Button';
+import Alert from '../components/UI/Alert';
 import { register, verifyOtp } from "../services/authService";
-import Modal from "../components/ui/Modal"; // Nếu bạn chưa có Modal, mình có thể viết cho
+import Modal from "../components/UI/Modal"; // Nếu bạn chưa có Modal, mình có thể viết cho
 
 const Register = () => {
   const [formData, setFormData] = useState({ email: "", password: "", confirmPassword: "" });

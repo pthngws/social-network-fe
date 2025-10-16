@@ -6,9 +6,9 @@ import CreatePostModal from '../components/CreatePostModal';
 import Post from '../components/Post';
 import { userService } from '../services/userService';
 import { PencilIcon } from '@heroicons/react/24/solid';
-import Alert from '../components/ui/Alert';
+import Alert from '../components/UI/Alert';
 import { useApiLoading } from '../hooks/useApiLoading';
-import Input from '../components/ui/Input';
+import Input from '../components/UI/Input';
 const Profile = () => {
   const { user, loading: profileLoading, error: profileError, refetch } = useProfile();
   const { posts, fetchPosts } = usePosts('my');

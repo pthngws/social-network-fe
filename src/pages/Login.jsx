@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import Card from '../components/ui/Card';
-import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
-import Alert from '../components/ui/Alert';
+import Card from '../components/UI/Card';
+import Input from '../components/UI/Input';
+import Button from '../components/UI/Button';
+import Alert from '../components/UI/Alert';
 import { login } from '../services/authService';
 import validateLoginInputs from '../components/validateInputs';
 import { useAuthContext } from '../contexts/AuthContext';
